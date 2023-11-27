@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sample App</title>
+    <style>
+      .row {
+        display: flex;
+        flex-direction: row;
+      }
+
+      .label {
+        min-width: 112px;
+      }
+
+      input {
+        min-width: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      Sample App
+      <br /><br />
+      <div class="row">
+        <div class="label">App Id</div>
+        <input id="appId" />
+      </div>
+      <div class="row">
+        <div class="label">User Token</div>
+        <input id="userToken" />
+      </div>
+      <div class="row">
+        <div class="label">Encryption Key</div>
+        <input id="encryptionKey" />
+      </div>
+      <div class="row">
+        <label class="label">Challenge Id</label>
+        <input id="challengeId" />
+      </div>
+      <br />
+      <button id="verifyButton">Verify Challenge</button>
+    </div>
+  </body>
+</html>
