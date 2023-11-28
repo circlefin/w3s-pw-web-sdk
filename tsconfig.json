@@ -5,7 +5,9 @@
     "module": "commonjs",
     "target": "es6",
     "strictNullChecks": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node", "jest"],
+    "allowJs": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
