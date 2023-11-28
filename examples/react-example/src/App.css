@@ -1,0 +1,12 @@
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.label {
+  min-width: 112px;
+}
+
+input {
+  min-width: 200px;
+}
