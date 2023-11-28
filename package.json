@@ -1,7 +1,7 @@
 {
   "name": "@circle-fin/w3s-pw-web-sdk",
-  "version": "0.9.11",
-  "description": "Node.js SDK for Circle Programmable Wallets",
+  "version": "0.9.14",
+  "description": "Javascript/Typescript SDK for Circle Programmable Wallets",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -11,8 +11,7 @@
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
     "format": "prettier --write .",
-    "format-check": "prettier --check src/",
-    "publish": "npm publish"
+    "format-check": "prettier --check src/"
   },
   "repository": {
     "type": "git",
