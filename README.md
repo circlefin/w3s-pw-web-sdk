@@ -1,8 +1,8 @@
-# W3SSdk Documentation
+# Circle Programmable Wallets Web SDK
 
 ## Table of Contents
 
-- [W3SSdk Documentation](#w3ssdk-documentation)
+- [Circle Programmable Wallets Web SDK](#circle-programmable-wallets-web-sdk)
   - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
   - [Installation](#installation)
