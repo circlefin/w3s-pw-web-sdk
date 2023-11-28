@@ -6,6 +6,9 @@
   - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
   - [Installation](#installation)
+  - [Usage](#usage)
+    - [Prerequisites](#prerequisites)
+    - [Initiating the SDK](#initiating-the-sdk)
   - [Documentation](#documentation)
   - [Examples](#examples)
 
@@ -13,7 +16,7 @@
 
 ## Overview
 
-The `w3s-pw-web-sdk` is an integral part of the W3S ecosystem, designed to facilitate various operations related to web3 services. It enables users to handle a range of challenges, such as creating and managing wallets, initiating and modifying transactions, and setting security questions. This SDK is pivotal for developers working with W3S services, as it provides a structured and efficient way to integrate these functionalities into applications. By leveraging its methods and interfaces, developers can streamline interactions with the W3S backend, ensuring a more robust and user-friendly experience in managing web3-related tasks.
+Programmable Wallets Web SDK empowers developers to build web3 wallets on web apps with ease. It’s a non-custodial wallet solution that brings seamless onboarding & transaction experience for end-users and utilizes industry standard MPC cryptographic technology to ensure the security of private key as well as the safety of user assets.
 
 ## Installation
 
@@ -21,12 +24,60 @@ The `w3s-pw-web-sdk` is an integral part of the W3S ecosystem, designed to facil
 $ npm install @circle-fin/w3s-pw-web-sdk
 ```
 
+## Usage
+
+### Prerequisites
+
+Create a [Developer Account and acquire an API key in the Console](https://developers.circle.com/w3s/docs/circle-developer-account).
+
+### Initiating the SDK
+
+```jsx
+import { W3SSdk } from '@circle-fin/w3s-pw-web-sdk'
+
+const sdk = new W3SSdk()
+
+sdk.setAppSettings({
+  appId: '<Your App Id>',
+})
+sdk.setAuthentication({
+  userToken: '<Your user token>',
+  encryptionKey: '<Your encryption key>',
+})
+
+sdk.execute(challengeId, (error, result) => {
+  if (error) {
+    console.log(
+      `${error?.code?.toString() || 'Unknown code'}: ${
+        error?.message ?? 'Error!'
+      }`
+    )
+
+    return
+  }
+
+  console.log(`Challenge: ${result.type}`)
+  console.log(`status: ${result.status}`)
+
+  if (result.data) {
+    console.log(`signature: ${result.data?.signature}`)
+  }
+})
+```
+
 ## Documentation
 
-- [Usage](https://github.com/circlefin/w3s-pw-web-sdk/blob/master/docs/usage.md)
-- [Customization](https://github.com/circlefin/w3s-pw-web-sdk/blob/master/docs/customization.md)
-- [Circle Programmable Wallets SDK documentation](https://developers.circle.com/w3s/docs/programmable-wallets-sdk-overview)
+Check out the developer documentations below for an easy-breezy setup and smoother usage experience.
+
+- [Web SDK doc](https://developers.circle.com/w3s/docs/web)
+- [Web SDK UI Customization API doc](https://developers.circle.com/w3s/docs/web-sdk-ui-customization-api)
 
 ## Examples
 
-We provide sample applications that demonstrates how to use the SDK. You can find them in the [examples](https://github.com/circlefin/w3s-pw-web-sdk/blob/master/examples) folder.
+1. Cloning the example repo.
+2. Obtain the API Key & App ID from [Circle Developer Console](https://console.circle.com/).
+3. Running the script. We provide 3 frontend examples for you to try out, please follow the README.md in the example folder to execute the sample app.
+
+- [js-example](https://github.com/circlefin/w3s-pw-web-sdk/tree/master/examples/js-example)
+- [react-example](https://github.com/circlefin/w3s-pw-web-sdk/tree/master/examples/react-example)
+- [vue-example](https://github.com/circlefin/w3s-pw-web-sdk/tree/master/examples/vue-example)
