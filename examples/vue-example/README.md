@@ -10,6 +10,14 @@ This template should help get you started developing with Vue 3 in Vite.
 
 See [Vite Configuration Reference](https://vitejs.dev/config/).
 
+## Before you start
+
+Go to the root of this repo and change to this directory by running:
+
+```bash
+cd examples/vue-example
+```
+
 ## Project Setup
 
 ```sh
