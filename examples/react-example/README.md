@@ -2,6 +2,20 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Before you start
+
+Go to the root of this repo and change to this directory by running:
+
+```bash
+cd examples/react-example
+```
+
+## Install dependencies
+
+```bash
+npm install
+```
+
 ## Available Scripts
 
 In the project directory, you can run:
