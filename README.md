@@ -28,9 +28,11 @@ $ npm install @circle-fin/w3s-pw-web-sdk
 
 ### Prerequisites
 
-Create a [Developer Account and acquire an API key in the Console](https://developers.circle.com/w3s/docs/circle-developer-account).
+Sign up for [Circle's Dev Console](https://developers.circle.com/w3s/docs/circle-developer-account) to obtain an APP ID.
 
 ### Initiating the SDK
+
+A minimal example for initiating the SDK is as follows:
 
 ```jsx
 import { W3SSdk } from '@circle-fin/w3s-pw-web-sdk'
@@ -74,10 +76,14 @@ Check out the developer documentations below for an easy-breezy setup and smooth
 
 ## Examples
 
-1. Cloning the example repo.
-2. Obtain the API Key & App ID from [Circle Developer Console](https://console.circle.com/).
-3. Running the script. We provide 3 frontend examples for you to try out, please follow the README.md in the example folder to execute the sample app.
+We provide 3 frontend examples for you to try out:
 
 - [js-example](https://github.com/circlefin/w3s-pw-web-sdk/tree/master/examples/js-example)
 - [react-example](https://github.com/circlefin/w3s-pw-web-sdk/tree/master/examples/react-example)
 - [vue-example](https://github.com/circlefin/w3s-pw-web-sdk/tree/master/examples/vue-example)
+
+Please follow the steps below to start building:
+
+1. Clone this repo.
+2. Obtain the APP ID from [Circle Developer Console](https://console.circle.com/).
+3. Running the script. please follow the README.md in the example folder to execute the sample app.
