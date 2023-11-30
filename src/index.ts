@@ -73,7 +73,6 @@ export class W3SSdk {
 
   /**
    * Executes the challenge.
-   *
    * @param challengeId - Challenge ID.
    * @param onCompleted - Callback function that is called when the challenge is completed.
    */
@@ -120,7 +119,6 @@ export class W3SSdk {
 
   /**
    * Sets the application settings.
-   *
    * @param appSettings - Application settings.
    */
   setAppSettings(appSettings: AppSettings): void {
@@ -129,7 +127,6 @@ export class W3SSdk {
 
   /**
    * Sets the authentication information.
-   *
    * @param auth - Authentication information.
    */
   setAuthentication(auth: Authentication): void {
@@ -138,7 +135,6 @@ export class W3SSdk {
 
   /**
    * Sets the custom security questions. If the user doesn't provide the custom security questions, the default security questions will be used.
-   *
    * @param questions - Custom security questions.
    * @param requiredCount - Required number of security questions.
    * @param securityConfirmItems - Security confirm disclaimer items.
@@ -160,7 +156,6 @@ export class W3SSdk {
 
   /**
    * Sets the localizations.
-   *
    * @param localizations - Localizations.
    */
   setLocalizations(localizations: Localizations): void {
@@ -169,7 +164,6 @@ export class W3SSdk {
 
   /**
    * Sets the resources.
-   *
    * @param resources - Resources.
    */
   setResources(resources: Resources): void {
@@ -178,7 +172,6 @@ export class W3SSdk {
 
   /**
    * Sets the theme color.
-   *
    * @param themeColor - Theme color.
    */
   setThemeColor(themeColor: ThemeColor): void {
@@ -187,7 +180,6 @@ export class W3SSdk {
 
   /**
    * Sets the custom links.
-   *
    * @param customLinks - Custom links.
    */
   setCustomLinks(customLinks: CustomLinks): void {
@@ -196,7 +188,6 @@ export class W3SSdk {
 
   /**
    * Sets the callback function that is called when the user clicks the forgot pin button.
-   *
    * @param onForgotPin - Callback function that is called when the user clicks the forgot pin button.
    * @param shouldCloseModalOnForgotPin - Indicates whether the modal should be closed when the user clicks the forgot pin button.  Default is false.
    */
@@ -217,7 +208,6 @@ export class W3SSdk {
 
   /**
    * Sets the challenge.
-   *
    * @param challenge - Challenge.
    */
   private setChallenge(challenge: Challenge): void {
@@ -226,7 +216,6 @@ export class W3SSdk {
 
   /**
    * Handles the postMessage event.
-   *
    * @param event - PostMessageEvent.
    */
   readonly messageHandler = (event: PostMessageEvent): void => {
