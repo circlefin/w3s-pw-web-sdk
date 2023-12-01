@@ -1,7 +1,7 @@
 import { W3SSdk } from '@circle-fin/w3s-pw-web-sdk'
 import { useCallback, useEffect, useState } from 'react'
 
-import './app.css'
+import './App.css'
 
 let sdk
 
