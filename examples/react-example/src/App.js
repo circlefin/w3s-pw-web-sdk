@@ -1,8 +1,6 @@
 import { W3SSdk } from '@circle-fin/w3s-pw-web-sdk'
 import { useCallback, useEffect, useState } from 'react'
 
-import './app.css'
-
 let sdk
 
 function App() {
@@ -123,6 +121,7 @@ function App() {
       </div>
       <div className="row">
         <label className="label">Challenge Id</label>
+        <br />
         <input onChange={onChallengeIdChange} value={challengeId} />
       </div>
       <br />
