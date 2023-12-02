@@ -59,7 +59,7 @@ describe('W3SSdk', () => {
   it('should call onComplete correctly on challenge complete', () => {
     const onComplete = jest.fn()
     const event = {
-      origin: 'https://auth.circle.com',
+      origin: 'https://pw-auth.circle.com',
       data: {
         onComplete: true,
         result: {
@@ -79,7 +79,7 @@ describe('W3SSdk', () => {
   it('should call onComplete correctly on error', () => {
     const onComplete = jest.fn()
     const event = {
-      origin: 'https://auth.circle.com',
+      origin: 'https://pw-auth.circle.com',
       data: {
         onError: true,
         error: {

@@ -30,7 +30,7 @@ import type {
 } from './types'
 
 export class W3SSdk {
-  private readonly serviceUrl = 'https://auth.circle.com'
+  private readonly serviceUrl = 'https://pw-auth.circle.com'
   private static instance: W3SSdk | null = null
   private readonly iframe: HTMLIFrameElement
   private readonly window: Window = window
