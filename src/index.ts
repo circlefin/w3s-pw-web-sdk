@@ -99,6 +99,7 @@ export class W3SSdk {
     this.iframe.style.top = '50%'
     this.iframe.style.left = '50%'
     this.iframe.style.transform = 'translate(-50%, -50%)'
+    this.iframe.style.zIndex = '2147483647'
 
     document.body.appendChild(this.iframe)
 
