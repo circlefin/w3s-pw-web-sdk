@@ -16,16 +16,13 @@ import type {
   AppSettings,
   Authentication,
   Challenge,
-  ChallengeResult,
-  ChallengeStatus,
-  ChallengeType,
+  ChallengeCompleteCallback,
   CustomLinks,
-  Error,
   Localizations,
   PostMessageEvent,
   Resources,
   SecurityQuestion,
-  SignMessageResult,
+  SsoSettings,
   ThemeColor,
 } from './types'
 
@@ -44,20 +41,25 @@ export class W3SSdk {
   private themeColor?: ThemeColor
   private resources?: Resources
   private customLinks?: CustomLinks
+  private ssoSettings?: SsoSettings
   /**
    * Callback function that is called when the challenge is completed.
    */
-  private onComplete?: (
-    error: Error | undefined,
-    result: ChallengeResult | undefined
-  ) => Promise<void> | void
-
+  private onComplete?: ChallengeCompleteCallback
   private shouldCloseModalOnForgotPin = false
   /**
    * Callback function that is called when the user clicks the forgot pin button.
    */
   private onForgotPin?: () => void
   private receivedResponseFromService = false
+  /**
+   * Promise that is resolved when the device ID is received.
+   */
+  private resolveDeviceIdPromise?: (deviceId: string) => void
+  /**
+   * Promise that is rejected when the device ID is not received.
+   */
+  private rejectDeviceIdPromise?: (reason: string) => void
 
   constructor() {
     if (W3SSdk.instance != null) {
@@ -76,46 +78,48 @@ export class W3SSdk {
    * @param challengeId - Challenge ID.
    * @param onCompleted - Callback function that is called when the challenge is completed.
    */
-  execute(
-    challengeId: string,
-    onCompleted?: (
-      error: Error | undefined,
-      result: ChallengeResult | undefined
-    ) => Promise<void> | void
-  ): void {
+  execute(challengeId: string, onCompleted?: ChallengeCompleteCallback): void {
     this.subscribeMessage()
     this.setChallenge({ challengeId })
+    this.exec(onCompleted)
+  }
 
-    const protocol = this.window.location.protocol
-    const host = this.window.location.host
-    const fullDomainWithProtocol = `${protocol}//${host}`
+  /**
+   * Executes the challenge with userSecret. This is used for SSO challenges.
+   * @param challengeId - Challenge ID.
+   * @param userSecret - User secret.
+   * @param onCompleted - Callback function that is called when the challenge is completed.
+   */
+  executeWithKeyShare(
+    challengeId: string,
+    userSecret: string,
+    onCompleted?: ChallengeCompleteCallback
+  ) {
+    this.subscribeMessage()
+    this.setChallenge({ challengeId, userSecret })
+    this.exec(onCompleted, !this.ssoSettings?.disableConfirmationUI)
+  }
 
-    this.iframe.src = `${this.serviceUrl}/?origin=${fullDomainWithProtocol}`
-    this.iframe.id = 'sdkIframe'
-    this.iframe.width = '100%'
-    this.iframe.height = '100%'
+  /**
+   * Gets the device ID.
+   * @returns Promise<string> - Device ID.
+   */
+  getDeviceId(): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      this.resolveDeviceIdPromise = resolve
+      this.rejectDeviceIdPromise = reject
 
-    this.iframe.style.position = 'fixed'
-    this.iframe.style.top = '50%'
-    this.iframe.style.left = '50%'
-    this.iframe.style.transform = 'translate(-50%, -50%)'
-    this.iframe.style.zIndex = '2147483647'
+      this.subscribeMessage()
+      this.appendIframe(false, 'device-id')
 
-    document.body.appendChild(this.iframe)
-
-    this.onComplete = onCompleted
-
-    setTimeout(() => {
-      if (!this.receivedResponseFromService) {
-        void this.onComplete?.(
-          {
-            code: 155706,
-            message: 'Network error',
-          },
-          undefined
-        )
-      }
-    }, 1000 * 10)
+      setTimeout(() => {
+        if (!this.receivedResponseFromService) {
+          this.rejectDeviceIdPromise?.('Failed to receive deviceId')
+          this.closeModal()
+          this.unSubscribeMessage()
+        }
+      }, 1000 * 10)
+    })
   }
 
   /**
@@ -188,6 +192,14 @@ export class W3SSdk {
   }
 
   /**
+   * Sets the SSO settings.
+   * @param ssoSettings - SSO settings.
+   */
+  setSsoSettings(ssoSettings: SsoSettings): void {
+    this.ssoSettings = ssoSettings
+  }
+
+  /**
    * Sets the callback function that is called when the user clicks the forgot pin button.
    * @param onForgotPin - Callback function that is called when the user clicks the forgot pin button.
    * @param shouldCloseModalOnForgotPin - Indicates whether the modal should be closed when the user clicks the forgot pin button.  Default is false.
@@ -213,6 +225,56 @@ export class W3SSdk {
    */
   private setChallenge(challenge: Challenge): void {
     this.challenge = challenge
+  }
+
+  /**
+   * Appends the iframe to the document body.
+   * @param showIframe - Indicates whether the iframe should be shown. Default is true.
+   * @param subRoute - Sub route.
+   */
+  private appendIframe(showIframe = true, subRoute = '') {
+    const protocol = this.window.location.protocol
+    const host = this.window.location.host
+    const fullDomainWithProtocol = `${protocol}//${host}`
+
+    this.iframe.src = `${this.serviceUrl}/${subRoute}?origin=${fullDomainWithProtocol}`
+    this.iframe.id = 'sdkIframe'
+    this.iframe.width = showIframe ? '100%' : '0%'
+    this.iframe.height = showIframe ? '100%' : '0%'
+    this.iframe.style.zIndex = showIframe ? '2147483647' : '-1'
+    this.iframe.style.display = 'none'
+
+    if (showIframe) {
+      this.iframe.style.position = 'fixed'
+      this.iframe.style.top = '50%'
+      this.iframe.style.left = '50%'
+      this.iframe.style.transform = 'translate(-50%, -50%)'
+      this.iframe.style.display = ''
+    }
+
+    document.body.appendChild(this.iframe)
+  }
+
+  /**
+   * Executes the challenge.
+   * @param onCompleted - Callback function that is called when the challenge is completed.
+   * @param showIframe - Indicates whether the iframe should be shown. Default is true.
+   */
+  private exec(onCompleted?: ChallengeCompleteCallback, showIframe = true) {
+    this.appendIframe(showIframe)
+    this.onComplete = onCompleted
+
+    setTimeout(() => {
+      if (!this.receivedResponseFromService) {
+        void this.onComplete?.(
+          {
+            code: 155706,
+            message: 'Network error',
+          },
+          undefined
+        )
+      }
+    }, 1000 * 10)
   }
 
   /**
@@ -245,6 +307,7 @@ export class W3SSdk {
               localizations: this.localizations,
               resources: this.resources,
               customLinks: this.customLinks,
+              ssoSettings: this.ssoSettings,
             },
           },
         },
@@ -258,16 +321,12 @@ export class W3SSdk {
       ) as HTMLIFrameElement
       iframe?.parentNode?.removeChild(iframe)
 
-      const result: ChallengeResult | undefined =
-        event.data?.result != null
-          ? {
-              type: event.data?.result.type as ChallengeType,
-              status: event.data?.result.status as ChallengeStatus,
-              data: event.data?.result.data as SignMessageResult,
-            }
-          : undefined
+      void this.onComplete?.(undefined, event.data?.result)
+    } else if (event.data?.deviceId) {
+      this.resolveDeviceIdPromise?.(event.data.deviceId)
 
-      void this.onComplete?.(undefined, result)
+      this.closeModal()
+      this.unSubscribeMessage()
     } else if (event.data?.onError) {
       void this.onComplete?.(event.data?.error, undefined)
     } else if (event.data?.onClose) {
