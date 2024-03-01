@@ -27,6 +27,7 @@ export enum ChallengeType {
   CANCEL_TRANSACTION = 'CANCEL_TRANSACTION',
   SIGN_MESSAGE = 'SIGN_MESSAGE',
   SIGN_TYPEDDATA = 'SIGN_TYPEDDATA',
+  SIGN_TRANSACTION = 'SIGN_TRANSACTION',
   UNKNOWN = 'UNKNOWN',
 }
 
@@ -125,6 +126,7 @@ export enum ErrorCode {
   biometricsUserLockoutPermanent = 155714,
   biometricsUserNotAllowPermission = 155715,
   biometricsInternalError = 155716,
+  invalidUserSecret= 155718,
   walletIdNotFound = 156001,
   tokenIdNotFound = 156002,
   transactionIdNotFound = 156003,
@@ -157,22 +159,64 @@ export interface Challenge {
    * Challenge ID.
    */
   challengeId: string
+  /**
+   * SSO user secret.
+   */
+  userSecret?: string
+}
+
+/**
+ * Base challenge result interface. Holds the challenge type and status.
+ */
+export interface ChallengeResult {
+  /**
+   * Challenge type.
+   */
+  type: ChallengeType
+  /**
+   * Challenge status.
+   */
+  status: ChallengeStatus
 }
 
 /**
  * Result for sign message and sign typed-data challenges.
  */
-export interface SignMessageResult {
+export interface SignMessageResult extends ChallengeResult {
   /**
-   * Signature.
+   * Challenge type.
    */
-  signature: string
+  type: ChallengeType.SIGN_MESSAGE | ChallengeType.SIGN_TYPEDDATA
+  data?: {
+    /**
+     * Signature.
+     */
+    signature: string
+  }
 }
 
-export interface ChallengeResult {
-  type: ChallengeType
-  status: ChallengeStatus
-  data?: SignMessageResult
+/**
+ * Result for sign transaction challenge.
+ */
+export interface SignTransactionResult extends ChallengeResult {
+  /**
+   * Challenge type.
+   */
+  type: ChallengeType.SIGN_TRANSACTION
+  data?: {
+    /**
+     * Signature.
+     */
+    signature: string
+    /**
+     * Transaction hash.
+     */
+    txHash: string
+    /**
+     * Signed transaction.
+     */
+    signedTransaction: string
+  }
 }
 
 export interface SecurityQuestion {
@@ -198,6 +242,15 @@ export interface Error {
   message: string
 }
 
+export type ChallengeCompleteCallback = (
+  error: Error | undefined,
+  result:
+    | ChallengeResult
+    | SignMessageResult
+    | SignTransactionResult
+    | undefined
+) => Promise<void> | void
+
 export interface PostMessageEvent extends MessageEvent {
   data: {
     onFrameReady?: boolean
@@ -206,14 +259,9 @@ export interface PostMessageEvent extends MessageEvent {
     onLearnMore?: boolean
     onError?: boolean
     onClose?: boolean
+    deviceId?: string
     error?: Error
-    result?: {
-      type: string
-      status: string
-      data?: {
-        signature: string
-      }
-    }
+    result?: ChallengeResult | SignMessageResult | SignTransactionResult
   }
 }
 
@@ -522,4 +570,11 @@ export interface CustomLinks {
    * External link for the learn more button link.
    */
   learnMoreUrl?: string
+}
+
+export interface SsoSettings {
+  /**
+   * Controls whether the SSO UI is disabled.
+   */
+  disableConfirmationUI?: boolean
 }
