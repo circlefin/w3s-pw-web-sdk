@@ -72,7 +72,7 @@ sdk.execute(challengeId, (error, result) => {
 Check out the developer documentations below for an easy-breezy setup and smoother usage experience.
 
 - [Web SDK doc](https://developers.circle.com/w3s/docs/web)
-- [Web SDK UI Customization API doc](https://developers.circle.com/w3s/docs/web-sdk-ui-customization-api)
+- [Web SDK UI Customization API doc](https://developers.circle.com/w3s/docs/web-sdk-ui-customizations)
 
 ## Examples
 
