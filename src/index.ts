@@ -90,7 +90,7 @@ export class W3SSdk {
    * @param userSecret - User secret.
    * @param onCompleted - Callback function that is called when the challenge is completed.
    */
-  executeWithKeyShare(
+  executeWithUserSecret(
     challengeId: string,
     userSecret: string,
     onCompleted?: ChallengeCompleteCallback
