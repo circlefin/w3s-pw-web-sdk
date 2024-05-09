@@ -18,6 +18,7 @@ import type {
   Challenge,
   ChallengeCompleteCallback,
   CustomLinks,
+  DeviceInfo,
   Localizations,
   PostMessageEvent,
   Resources,
@@ -25,6 +26,8 @@ import type {
   SsoSettings,
   ThemeColor,
 } from './types'
+
+const packageInfo = require('../package.json') as { version: string }
 
 export class W3SSdk {
   private readonly serviceUrl = 'https://pw-auth.circle.com'
@@ -42,6 +45,7 @@ export class W3SSdk {
   private resources?: Resources
   private customLinks?: CustomLinks
   private ssoSettings?: SsoSettings
+  private deviceInfo?: DeviceInfo
   /**
    * Callback function that is called when the challenge is completed.
    */
@@ -62,13 +66,23 @@ export class W3SSdk {
   private rejectDeviceIdPromise?: (reason: string) => void
 
   constructor() {
+    const version = packageInfo.version
+
     if (W3SSdk.instance != null) {
       this.iframe = W3SSdk.instance.iframe
+      this.deviceInfo = {
+        model: 'Web',
+        version,
+      }
 
       return W3SSdk.instance
     }
 
     this.iframe = document.createElement('iframe')
+    this.deviceInfo = {
+      model: 'Web',
+      version,
+    }
 
     W3SSdk.instance = this
   }
@@ -309,6 +323,7 @@ export class W3SSdk {
               customLinks: this.customLinks,
               ssoSettings: this.ssoSettings,
             },
+            deviceInfo: this.deviceInfo,
           },
         },
         this.serviceUrl
