@@ -1,6 +1,6 @@
 {
   "name": "@circle-fin/w3s-pw-web-sdk",
-  "version": "1.0.9",
+  "version": "1.0.13",
   "description": "Javascript/Typescript SDK for Circle Programmable Wallets",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
