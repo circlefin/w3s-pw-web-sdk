@@ -126,12 +126,15 @@ export enum ErrorCode {
   biometricsUserLockoutPermanent = 155714,
   biometricsUserNotAllowPermission = 155715,
   biometricsInternalError = 155716,
-  invalidUserSecret= 155718,
   walletIdNotFound = 156001,
   tokenIdNotFound = 156002,
   transactionIdNotFound = 156003,
   entityCredentialNotFound = 156004,
   walletSetIdNotFound = 156005,
+
+  userSecretMissing = 155717,
+  invalidUserSecret = 155718,
+  userTokenMismatch = 155719,
 }
 
 // Settings and Authentication
@@ -163,6 +166,18 @@ export interface Challenge {
    * SSO user secret.
    */
   userSecret?: string
+}
+
+// Device Information
+export interface DeviceInfo {
+  /**
+   * SDK type.
+   */
+  model: string
+  /**
+   * SDK version.
+   */
+  version: string
 }
 
 /**
@@ -216,6 +231,18 @@ export interface SignTransactionResult extends ChallengeResult {
      * Signed transaction.
      */
     signedTransaction: string
+    /**
+     * The `v` field of the elliptic curve signature. It is used to calculate the public key.
+     */
+    v?: string
+    /**
+     * The `r` field of the elliptic curve signature. It is part of the actual signature along with the `s` field.
+     */
+    r?: string
+    /**
+     * The `s` field of the elliptic curve signature. It is part of the actual signature along with the `r` field.
+     */
+    s?: string
   }
 }
 
@@ -408,6 +435,14 @@ export interface ThemeColor {
    * Fill color for inputted pincode input dot, e.g. '#0000ff' or 'blue'.
    */
   pinDotActivated?: string
+  /**
+   * Text color for entered pincode input, e.g. `'#000000'` or `'black'`.
+   */
+  enteredPinText?: string
+  /**
+   * Text color for text input, e.g. '#000000' or 'black'.
+   */
+  inputText?: string
   /**
    * Outline color for text input on focused, e.g. '#0000ff' or 'blue'.
    */
