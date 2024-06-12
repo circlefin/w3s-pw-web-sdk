@@ -12,20 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { getApps, initializeApp } from 'firebase/app'
+import {
+  OAuthProvider,
+  getAuth,
+  getRedirectResult,
+  signInWithRedirect,
+} from 'firebase/auth'
+import { decode } from 'jsonwebtoken'
+import { v4 as uuidv4 } from 'uuid'
+
+import { SocialLoginProvider } from './types'
+
 import type {
   AppSettings,
   Authentication,
   Challenge,
   ChallengeCompleteCallback,
+  Configs,
   CustomLinks,
   DeviceInfo,
   Localizations,
+  LoginCompleteCallback,
   PostMessageEvent,
   Resources,
   SecurityQuestion,
-  SsoSettings,
   ThemeColor,
 } from './types'
+import type { FirebaseApp } from 'firebase/app'
+import type { UserCredential } from 'firebase/auth'
+import type { JwtPayload } from 'jsonwebtoken'
 
 const packageInfo = require('../package.json') as { version: string }
 
@@ -34,8 +50,7 @@ export class W3SSdk {
   private static instance: W3SSdk | null = null
   private readonly iframe: HTMLIFrameElement
   private readonly window: Window = window
-  private appSettings?: AppSettings
-  private auth?: Authentication
+  private configs?: Configs
   private challenge?: Challenge
   private securityQuestions?: SecurityQuestion[] | null
   private securityQuestionsRequiredCount = 2
@@ -44,12 +59,19 @@ export class W3SSdk {
   private themeColor?: ThemeColor
   private resources?: Resources
   private customLinks?: CustomLinks
-  private ssoSettings?: SsoSettings
   private deviceInfo?: DeviceInfo
+  private socialLoginToken?: string | null
+  private socialLoginProvider?: SocialLoginProvider
+  private firebaseApp?: FirebaseApp
+
   /**
    * Callback function that is called when the challenge is completed.
    */
   private onComplete?: ChallengeCompleteCallback
+  /**
+   * Callback function that is called when the page is redirected back from the social login provider and receives the verification result.
+   */
+  private onLoginComplete?: LoginCompleteCallback
   private shouldCloseModalOnForgotPin = false
   /**
    * Callback function that is called when the user clicks the forgot pin button.
@@ -64,54 +86,50 @@ export class W3SSdk {
    * Promise that is rejected when the device ID is not received.
    */
   private rejectDeviceIdPromise?: (reason: string) => void
+  /**
+   * Callback function that is called when the user clicks the resend OTP email button.
+   */
+  private onResendOtpEmail?: () => void
 
-  constructor() {
-    const version = packageInfo.version
-
+  constructor(configs?: Configs, onLoginComplete?: LoginCompleteCallback) {
     if (W3SSdk.instance != null) {
-      this.iframe = W3SSdk.instance.iframe
-      this.deviceInfo = {
-        model: 'Web',
-        version,
-      }
+      this.setupInstance(configs, onLoginComplete)
 
       return W3SSdk.instance
     }
 
     this.iframe = document.createElement('iframe')
-    this.deviceInfo = {
-      model: 'Web',
-      version,
-    }
-
+    this.setupInstance(configs, onLoginComplete)
     W3SSdk.instance = this
   }
 
   /**
-   * Executes the challenge.
-   * @param challengeId - Challenge ID.
-   * @param onCompleted - Callback function that is called when the challenge is completed.
+   * Sets the application settings.
+   * @param appSettings - Application settings.
    */
-  execute(challengeId: string, onCompleted?: ChallengeCompleteCallback): void {
-    this.subscribeMessage()
-    this.setChallenge({ challengeId })
-    this.exec(onCompleted)
+  setAppSettings(appSettings: AppSettings): void {
+    if (this.configs) {
+      this.configs.appSettings = appSettings
+    }
   }
 
   /**
-   * Executes the challenge with userSecret. This is used for SSO challenges.
-   * @param challengeId - Challenge ID.
-   * @param userSecret - User secret.
-   * @param onCompleted - Callback function that is called when the challenge is completed.
+   * Sets the authentication information.
+   * @param auth - Authentication information.
    */
-  executeWithUserSecret(
-    challengeId: string,
-    userSecret: string,
-    onCompleted?: ChallengeCompleteCallback
-  ) {
-    this.subscribeMessage()
-    this.setChallenge({ challengeId, userSecret })
-    this.exec(onCompleted, !this.ssoSettings?.disableConfirmationUI)
+  setAuthentication(auth: Authentication): void {
+    if (this.configs) {
+      this.configs.authentication = auth
+    }
+  }
+
+  /**
+   * Updates the configurations.
+   * @param configs - Configurations.
+   * @param onLoginComplete - Callback function that is called when the page is redirected back from the social login provider and receives the verification result.
+   */
+  updateConfigs(configs?: Configs, onLoginComplete?: LoginCompleteCallback) {
+    this.setupInstance(configs, onLoginComplete ?? this.onLoginComplete)
   }
 
   /**
@@ -137,19 +155,56 @@ export class W3SSdk {
   }
 
   /**
-   * Sets the application settings.
-   * @param appSettings - Application settings.
+   * Performs social login.
+   * @param provider - Social login provider.
    */
-  setAppSettings(appSettings: AppSettings): void {
-    this.appSettings = appSettings
+  performLogin(provider: SocialLoginProvider): void {
+    if (provider === SocialLoginProvider.GOOGLE) {
+      this.performGoogleLogin()
+    } else if (provider === SocialLoginProvider.FACEBOOK) {
+      this.performFacebookLogin()
+    } else if (provider === SocialLoginProvider.APPLE) {
+      this.performAppleLogin()
+    } else {
+      void this.onLoginComplete?.(
+        {
+          code: 155140,
+          message: 'Invalid social login provider',
+        },
+        undefined
+      )
+    }
   }
 
   /**
-   * Sets the authentication information.
-   * @param auth - Authentication information.
+   * Executes email OTP verification.
    */
-  setAuthentication(auth: Authentication): void {
-    this.auth = auth
+  verifyOtp() {
+    this.subscribeMessage()
+    this.appendIframe(true, 'sso/verify-email')
+
+    setTimeout(() => {
+      if (!this.receivedResponseFromService) {
+        void this.onComplete?.(
+          {
+            code: 155706,
+            message: 'Network error',
+          },
+          undefined
+        )
+      }
+    }, 1000 * 10)
+  }
+
+  /**
+   * Executes the challenge.
+   * @param challengeId - Challenge ID.
+   * @param onCompleted - Callback function that is called when the challenge is completed.
+   */
+  execute(challengeId: string, onCompleted?: ChallengeCompleteCallback): void {
+    this.subscribeMessage()
+    this.setChallenge({ challengeId })
+    this.exec(onCompleted, false)
   }
 
   /**
@@ -206,14 +261,6 @@ export class W3SSdk {
   }
 
   /**
-   * Sets the SSO settings.
-   * @param ssoSettings - SSO settings.
-   */
-  setSsoSettings(ssoSettings: SsoSettings): void {
-    this.ssoSettings = ssoSettings
-  }
-
-  /**
    * Sets the callback function that is called when the user clicks the forgot pin button.
    * @param onForgotPin - Callback function that is called when the user clicks the forgot pin button.
    * @param shouldCloseModalOnForgotPin - Indicates whether the modal should be closed when the user clicks the forgot pin button.  Default is false.
@@ -231,6 +278,39 @@ export class W3SSdk {
 
       onForgotPin?.()
     }
+  }
+
+  /**
+   * Sets the callback function that is called when the user clicks the resend OTP email button.
+   * @param onResendOtpEmail - Callback function that is called when the user clicks the resend OTP email button.
+   */
+  setOnResendOtpEmail(onResendOtpEmail: () => void): void {
+    this.onResendOtpEmail = onResendOtpEmail
+  }
+
+  /**
+   * Sets up the instance.
+   * @param configs - Configurations.
+   * @param onLoginComplete - Callback function that is called when the page is redirected back from the social login provider and receives the verification result.
+   */
+  private setupInstance(
+    configs?: Configs,
+    onLoginComplete?: LoginCompleteCallback
+  ) {
+    if (configs?.socialLoginConfigs?.apple && getApps().length === 0) {
+      this.firebaseApp = initializeApp(configs.socialLoginConfigs.apple)
+    } else if (getApps().length !== 0) {
+      this.firebaseApp = getApps()[0]
+    }
+
+    this.onLoginComplete = onLoginComplete
+    this.configs = configs
+    this.deviceInfo = {
+      model: 'Web',
+      version: packageInfo.version,
+    }
+
+    void this.execSocialLoginStatusCheck()
   }
 
   /**
@@ -291,6 +371,333 @@ export class W3SSdk {
     }, 1000 * 10)
   }
 
+  private performAppleLogin() {
+    if (!this.firebaseApp) {
+      void this.onLoginComplete?.(
+        {
+          code: 155140,
+          message: 'Please provide the Apple social login configurations.',
+        },
+        undefined
+      )
+
+      return
+    }
+
+    this.saveOAuthInfo(SocialLoginProvider.APPLE)
+    const provider = new OAuthProvider('apple.com')
+    const auth = getAuth(this.firebaseApp)
+
+    void signInWithRedirect(auth, provider)
+  }
+
+  private performFacebookLogin() {
+    if (!this?.configs?.socialLoginConfigs?.facebook) {
+      void this.onLoginComplete?.(
+        {
+          code: 155140,
+          message: 'Please provide the Facebook social login configurations.',
+        },
+        undefined
+      )
+
+      return
+    }
+
+    const { appId, redirectUri } = this.configs.socialLoginConfigs.facebook
+
+    const { url = '', state = '' } =
+      this.generateOauthUrlWithParams(
+        SocialLoginProvider.FACEBOOK,
+        appId,
+        redirectUri
+      ) || {}
+
+    this.saveOAuthInfo(SocialLoginProvider.FACEBOOK, state)
+    this.window.location.href = url
+  }
+
+  private performGoogleLogin() {
+    if (!this.configs?.socialLoginConfigs?.google) {
+      void this.onLoginComplete?.(
+        {
+          code: 155140,
+          message: 'Please provide the Google social login configurations.',
+        },
+        undefined
+      )
+
+      return
+    }
+
+    const { clientId, redirectUri } = this.configs.socialLoginConfigs.google
+
+    const {
+      url = '',
+      state = '',
+      nonce = '',
+    } = this.generateOauthUrlWithParams(
+      SocialLoginProvider.GOOGLE,
+      clientId,
+      redirectUri
+    ) || {}
+
+    this.saveOAuthInfo(SocialLoginProvider.GOOGLE, state, nonce)
+    this.window.location.href = url
+  }
+
+  /**
+   * Generates the OAuth URL with the necessary parameters.
+   * @param provider - Social login provider.
+   * @param id - Client ID or Application ID.
+   * @param redirectUri - Redirect URI.
+   * @returns OAuth URL with the necessary parameters.
+   */
+  private generateOauthUrlWithParams(
+    provider: SocialLoginProvider,
+    id: string,
+    redirectUri: string
+  ):
+    | {
+        url: string
+        state: string
+        nonce?: string
+      }
+    | undefined {
+    const state = uuidv4()
+
+    if (provider === SocialLoginProvider.GOOGLE) {
+      const scope = encodeURIComponent(
+        'openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
+      )
+      const responseType = encodeURIComponent('id_token token')
+      const nonce = uuidv4()
+
+      return {
+        url: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${id}&redirect_uri=${encodeURIComponent(
+          redirectUri
+        )}&scope=${scope}&state=${state}&response_type=${responseType}&nonce=${nonce}`,
+        state,
+        nonce,
+      }
+    } else if (provider === SocialLoginProvider.FACEBOOK) {
+      const scope = encodeURIComponent('email')
+
+      return {
+        url: `https://www.facebook.com/v13.0/dialog/oauth?client_id=${id}&redirect_uri=${encodeURIComponent(
+          redirectUri
+        )}&scope=${scope}&state=${state}&response_type=token`,
+        state,
+      }
+    }
+  }
+  /**
+   * Executes the social login status check before sending the token to the verification service.
+   */
+  private async execSocialLoginStatusCheck(): Promise<void> {
+    const socialLoginProvider = this.window.localStorage.getItem(
+      'socialLoginProvider'
+    ) as SocialLoginProvider
+
+    if (socialLoginProvider === SocialLoginProvider.APPLE) {
+      await this.handleAppleLoginResponse()
+    } else if (this.isValidHash(this.window.location.hash)) {
+      this.handleHashLoginResponse(socialLoginProvider)
+    }
+  }
+
+  /**
+   * Handles the Apple login response.
+   * @returns Promise<void>.
+   */
+  private async handleAppleLoginResponse(): Promise<void> {
+    const auth = getAuth(this.firebaseApp)
+
+    try {
+      const result = await getRedirectResult(auth)
+
+      if (!result || !this.extractTokenFromResultAndSave(result)) {
+        return
+      }
+
+      // Send the token to the verification service and reset the social login provider
+      this.verifyTokenViaService()
+      this.window.localStorage.setItem('socialLoginProvider', '')
+    } catch (error) {
+      this.handleLoginFailure()
+    }
+  }
+
+  /**
+   * Handles the hash login responses.
+   * @param socialLoginProvider - Social login provider.
+   */
+  private handleHashLoginResponse(
+    socialLoginProvider: SocialLoginProvider
+  ): void {
+    const hashParams = new URLSearchParams(window.location.hash.slice(1))
+
+    if (socialLoginProvider === SocialLoginProvider.GOOGLE) {
+      this.handleGoogleLogin(hashParams)
+    } else if (socialLoginProvider === SocialLoginProvider.FACEBOOK) {
+      this.handleFacebookLogin(hashParams)
+    }
+
+    // Send the token to the verification service
+    this.verifyTokenViaService()
+
+    // Clear the hash
+    history.replaceState(null, '', window.location.href.split('#')[0])
+  }
+
+  private handleGoogleLogin(hashParams: URLSearchParams): void {
+    if (
+      this.isLoginStateValid(hashParams) &&
+      this.isLoginNonceValid(hashParams)
+    ) {
+      this.socialLoginToken = hashParams.get('id_token')
+      this.socialLoginProvider = SocialLoginProvider.GOOGLE
+    }
+  }
+
+  private handleFacebookLogin(hashParams: URLSearchParams): void {
+    if (this.isLoginStateValid(hashParams)) {
+      this.socialLoginToken = hashParams.get('access_token')
+      this.socialLoginProvider = SocialLoginProvider.FACEBOOK
+    }
+  }
+
+  private isLoginStateValid(hashParams: URLSearchParams): boolean {
+    return this.checkSocialLoginState(hashParams)
+  }
+
+  private isLoginNonceValid(hashParams: URLSearchParams): boolean {
+    return this.checkSocialLoginNonce(hashParams)
+  }
+
+  private isValidHash(hash: string): boolean {
+    const validHashPattern =
+      /^#(?:[a-zA-Z0-9-_.%]+=[^&]*&)*[a-zA-Z0-9-_.%]+=[^&]*$/
+
+    return validHashPattern.test(hash)
+  }
+
+  private extractTokenFromResultAndSave(result: UserCredential): boolean {
+    const credential = OAuthProvider.credentialFromResult(result)
+
+    if (credential && credential.idToken) {
+      this.socialLoginToken = credential.idToken
+      this.socialLoginProvider = SocialLoginProvider.APPLE
+      return true
+    }
+
+    return false
+  }
+
+  private handleLoginFailure(): void {
+    void this.onLoginComplete?.(
+      {
+        code: 155140,
+        message: 'Failed to validate the idToken / accessToken',
+      },
+      undefined
+    )
+  }
+
+  private verifyTokenViaService(): void {
+    this.subscribeMessage()
+    this.appendIframe(false, 'sso/verify-token')
+
+    setTimeout(() => {
+      if (!this.receivedResponseFromService) {
+        void this.onComplete?.(
+          {
+            code: 155706,
+            message: 'Network error',
+          },
+          undefined
+        )
+      }
+    }, 1000 * 10)
+  }
+
+  /**
+   * Saves the OAuth information to the local storage in order to check the state and nonce value later.
+   * @param provider - Social login provider.
+   * @param state - State value.
+   * @param nonce - Nonce value.
+   */
+  private saveOAuthInfo(
+    provider: SocialLoginProvider,
+    state?: string,
+    nonce?: string
+  ): void {
+    this.window.localStorage.setItem('socialLoginProvider', provider)
+    this.window.localStorage.setItem('state', state ?? '')
+    this.window.localStorage.setItem('nonce', nonce ?? '')
+  }
+
+  /**
+   * Checks the state value from the social login response.
+   * @param hashParams - Hash parameters.
+   * @returns Indicates whether the state value is valid.
+   */
+  private checkSocialLoginState(hashParams: URLSearchParams) {
+    const state = hashParams.get('state')
+    const storedState = this.window.localStorage.getItem('state')
+
+    if (!storedState || state !== storedState) {
+      void this.onLoginComplete?.(
+        {
+          code: 155140,
+          message: 'Failed to validate the idToken / accessToken',
+        },
+        undefined
+      )
+
+      return false
+    }
+
+    return true
+  }
+
+  /**
+   * Checks the nonce value from the social login response. Only id token is going to have nonce value.
+   * @param hashParams - Hash parameters.
+   * @returns Indicates whether the nonce value is valid.
+   */
+  private checkSocialLoginNonce(hashParams: URLSearchParams): boolean {
+    const token = hashParams.get('id_token')
+    const decodedToken = decode(token || '')
+
+    const errorPayload = {
+      code: 155140,
+      message: 'Failed to validate the idToken/ accessToken',
+    }
+
+    if (decodedToken === null) {
+      void this.onLoginComplete?.(errorPayload, undefined)
+
+      return false
+    }
+
+    try {
+      const storedNonce = this.window.localStorage.getItem('nonce')
+
+      if (!storedNonce || (decodedToken as JwtPayload)?.nonce !== storedNonce) {
+        void this.onLoginComplete?.(errorPayload, undefined)
+
+        return false
+      }
+    } catch {
+      void this.onLoginComplete?.(errorPayload, undefined)
+
+      return false
+    }
+
+    return true
+  }
+
   /**
    * Handles the postMessage event.
    * @param event - PostMessageEvent.
@@ -308,8 +715,8 @@ export class W3SSdk {
       iframe?.contentWindow?.postMessage(
         {
           w3s: {
-            appSettings: this.appSettings,
-            auth: this.auth,
+            appSettings: this.configs?.appSettings,
+            auth: this.configs?.authentication,
             challenge: this.challenge,
             customizations: {
               securityQuestions: {
@@ -321,9 +728,21 @@ export class W3SSdk {
               localizations: this.localizations,
               resources: this.resources,
               customLinks: this.customLinks,
-              ssoSettings: this.ssoSettings,
             },
             deviceInfo: this.deviceInfo,
+            ssoVerification: {
+              token: this.socialLoginToken,
+              deviceToken: this.configs?.socialLoginConfigs?.deviceToken,
+              deviceEncryptionKey:
+                this.configs?.socialLoginConfigs?.deviceEncryptionKey,
+              socialLoginProvider: this.socialLoginProvider,
+            },
+            emailVerification: {
+              deviceToken: this.configs?.socialLoginConfigs?.deviceToken,
+              deviceEncryptionKey:
+                this.configs?.socialLoginConfigs?.deviceEncryptionKey,
+              otpToken: this.configs?.socialLoginConfigs?.otpToken,
+            },
           },
         },
         this.serviceUrl
@@ -342,6 +761,38 @@ export class W3SSdk {
 
       this.closeModal()
       this.unSubscribeMessage()
+    } else if (event.data?.showUi) {
+      this.iframe.width = '100%'
+      this.iframe.height = '100%'
+      this.iframe.style.zIndex = '2147483647'
+      this.iframe.style.position = 'fixed'
+      this.iframe.style.top = '50%'
+      this.iframe.style.left = '50%'
+      this.iframe.style.transform = 'translate(-50%, -50%)'
+      this.iframe.style.display = ''
+    } else if (event.data?.onSocialLoginVerified) {
+      void this.onLoginComplete?.(
+        event.data.onSocialLoginVerified.error,
+        event.data.onSocialLoginVerified.result
+      )
+
+      this.closeModal()
+      this.unSubscribeMessage()
+    } else if (event.data?.onEmailLoginVerified) {
+      void this.onLoginComplete?.(
+        event.data.onEmailLoginVerified.error,
+        event.data.onEmailLoginVerified.result
+      )
+
+      if (
+        event.data.onEmailLoginVerified.result &&
+        !event.data.onEmailLoginVerified.error
+      ) {
+        this.unSubscribeMessage()
+        this.closeModal()
+      }
+    } else if (event.data?.onResendOtpEmail) {
+      this.onResendOtpEmail?.()
     } else if (event.data?.onError) {
       void this.onComplete?.(event.data?.error, undefined)
     } else if (event.data?.onClose) {
