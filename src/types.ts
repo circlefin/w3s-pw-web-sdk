@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import type { FirebaseOptions } from 'firebase/app'
+
 // Enums
 /**
  * ChallengeType.
@@ -67,6 +69,7 @@ export enum ErrorCode {
   invalidPartnerId = 13,
   invalidMessage = 14,
   invalidPhone = 15,
+
   userAlreadyExisted = 155101,
   userNotFound = 155102,
   userTokenNotFound = 155103,
@@ -87,6 +90,24 @@ export enum ErrorCode {
   invalidEncryptionKey = 155118,
   userPinLocked = 155119,
   securityAnswersLocked = 155120,
+
+  userOTPTokenExpiredError = 155130,
+  userOTPTokenInvalidError = 155131,
+  userOTPNotFoundError = 155132,
+  userOTPInvalidError = 155133,
+  userOTPNotMatchError = 155134,
+  userEmailInvalidError = 155135,
+  userEmailMismatchError = 155136,
+  deviceIDInvalidError = 155137,
+  emailSendingFailedError = 155138,
+  socialLoginTokenExpiredError = 155139,
+  socialLoginProviderAppIDNotMatchError = 155140,
+  userOTPIsLockedError = 155141,
+  userOTPSendCountsOverLimitError = 155142,
+  deviceTokenExpiredError = 155143,
+  deviceTokenInvalidError = 155144,
+  deviceTokenNotFoundError = 155145,
+
   notEnoughFunds = 155201,
   notEnoughBalance = 155202,
   exceedWithdrawLimit = 155203,
@@ -111,6 +132,7 @@ export enum ErrorCode {
   maxWalletLimitReached = 155502,
   walletSetIdMutuallyExclusive = 155503,
   metadataUnmatched = 155504,
+
   userCanceled = 155701,
   launchUiFailed = 155702,
   pinCodeNotMatched = 155703,
@@ -126,15 +148,15 @@ export enum ErrorCode {
   biometricsUserLockoutPermanent = 155714,
   biometricsUserNotAllowPermission = 155715,
   biometricsInternalError = 155716,
+  userSecretMissing = 155717,
+  invalidUserSecret = 155718,
+  userTokenMismatch = 155719,
+
   walletIdNotFound = 156001,
   tokenIdNotFound = 156002,
   transactionIdNotFound = 156003,
   entityCredentialNotFound = 156004,
   walletSetIdNotFound = 156005,
-
-  userSecretMissing = 155717,
-  invalidUserSecret = 155718,
-  userTokenMismatch = 155719,
 }
 
 // Settings and Authentication
@@ -154,6 +176,70 @@ export interface Authentication {
    * Encryption key. This key is used to encrypt the user token.
    */
   encryptionKey: string
+}
+
+/**
+ * Social Login Provider.
+ */
+export enum SocialLoginProvider {
+  APPLE = 'Apple',
+  FACEBOOK = 'Facebook',
+  GOOGLE = 'Google',
+}
+
+/**
+ * Social Login configurations, including Google, Facebook, and Apple.
+ */
+export interface SocialLoginConfigs {
+  google?:
+    | {
+        /**
+         * Google client ID.
+         */
+        clientId: string
+        /**
+         * Google redirect URI.
+         */
+        redirectUri: string
+      }
+    | undefined
+  facebook?:
+    | {
+        /**
+         * Facebook app ID.
+         */
+        appId: string
+        /**
+         * Facebook redirect URI.
+         */
+        redirectUri: string
+      }
+    | undefined
+  /**
+   * We use firebase for Apple login. You can provide the firebase configuration here.
+   */
+  apple?: FirebaseOptions | undefined
+  deviceToken: string
+  deviceEncryptionKey: string
+  otpToken?: string
+}
+
+/**
+ * Configuration settings for the SDK.
+ */
+export interface Configs {
+  /**
+   * Application settings.
+   */
+  appSettings: AppSettings
+  /**
+   * Authentication settings.
+   */
+  authentication?: Authentication
+  /**
+   * Social login configurations.
+   */
+  socialLoginConfigs?: SocialLoginConfigs
 }
 
 // Challenge Related
@@ -246,6 +332,36 @@ export interface SignTransactionResult extends ChallengeResult {
   }
 }
 
+/**
+ * Result for oauth login.
+ */
+export interface OAuthInfo {
+  provider: SocialLoginProvider
+  scope?: string[]
+  ssoUserUUID?: string
+  ssoUserInfo?: {
+    email?: string
+    name?: string
+    phone?: string
+  }
+}
+
+/**
+ * Social login result.
+ */
+export interface SocialLoginResult {
+  userToken: string
+  encryptionKey: string
+  refreshToken: string
+  oAuthInfo: OAuthInfo
+}
+
+/**
+ * Email login result.
+ */
+export interface EmailLoginResult
+  extends Omit<SocialLoginResult, 'oAuthInfo'> {}
+
 export interface SecurityQuestion {
   /**
    * Custom security question.
@@ -278,14 +394,29 @@ export type ChallengeCompleteCallback = (
     | undefined
 ) => Promise<void> | void
 
+export type LoginCompleteCallback = (
+  error: Error | undefined,
+  result: SocialLoginResult | EmailLoginResult | undefined
+) => Promise<void> | void
+
 export interface PostMessageEvent extends MessageEvent {
   data: {
     onFrameReady?: boolean
     onComplete?: boolean
     onForgotPin?: boolean
     onLearnMore?: boolean
+    onResendOtpEmail?: boolean
     onError?: boolean
     onClose?: boolean
+    showUi?: boolean
+    onSocialLoginVerified?: {
+      error: Error | undefined
+      result: SocialLoginResult | undefined
+    }
+    onEmailLoginVerified?: {
+      error: Error | undefined
+      result: EmailLoginResult | undefined
+    }
     deviceId?: string
     error?: Error
     result?: ChallengeResult | SignMessageResult | SignTransactionResult
@@ -296,6 +427,9 @@ export interface Common {
   continue?: string
   showPin?: string
   hidePin?: string
+  confirm?: string
+  sign?: string
+  retry?: string
 }
 
 export interface ConfirmPincode {
@@ -356,6 +490,103 @@ export interface SecuritySummary {
   question?: string
 }
 
+export interface SsoConfirm {
+  title?: string
+  headline?: string
+}
+
+export interface TransactionRequest {
+  title?: string
+  subtitle?: string
+
+  mainCurrency?: {
+    amount?: string | number
+    symbol?: string
+  }
+  exchangeValue?: {
+    amount?: string | number
+    symbol?: string
+  }
+
+  fromLabel?: string
+  from?: string
+  toLabel?: string
+  to?: string[]
+
+  networkFeeLabel?: string
+  networkFeeTip?: string
+  networkFee?: string
+  exchangeNetworkFee?: string
+
+  totalLabel?: string
+  total?: string[]
+  exchangeTotalValue?: string
+
+  rawTxDescription?: string
+  rawTx?: string
+}
+
+export interface ContractInteraction {
+  title?: string
+  subtitle?: string
+
+  mainCurrency?: {
+    amount?: string | number
+    symbol?: string
+  }
+  exchangeValue?: {
+    amount?: string | number
+    symbol?: string
+  }
+
+  fromLabel?: string
+  from?: string
+  contractAddressLabel?: string
+  contractInfo?: string[]
+
+  networkFeeLabel?: string
+  networkFeeTip?: string
+  networkFee?: string
+  exchangeNetworkFee?: string
+
+  totalLabel?: string
+  total?: string[]
+  exchangeTotalValue?: string
+
+  dataDetails?: {
+    dataDetailsLabel?: string
+    callData?: {
+      callDataLabel?: string
+      data?: string
+    }
+    abiInfo?: {
+      functionNameLabel?: string
+      functionName?: string
+      parametersLabel?: string
+      parameters?: string[]
+    }
+  }
+}
+
+export interface SignatureRequest {
+  title?: string
+  contractName?: string
+  contractUrl?: string
+
+  subtitle?: string
+
+  descriptionLabel?: string
+  description?: string
+}
+
+export interface EmailOtp {
+  title?: string
+  subtitle?: string
+
+  resendHint?: string
+  resend?: string
+}
+
 export interface Localizations {
   common?: Common
   confirmInitPincode?: ConfirmPincode
@@ -368,6 +599,11 @@ export interface Localizations {
   securityIntros?: SecurityIntros
   securityQuestions?: SecurityQuestions
   securitySummary?: SecuritySummary
+  ssoConfirm?: SsoConfirm
+  transactionRequest?: TransactionRequest
+  contractInteraction?: ContractInteraction
+  signatureRequest?: SignatureRequest
+  emailOtp?: EmailOtp
 }
 
 export interface ThemeColor {
@@ -423,6 +659,26 @@ export interface ThemeColor {
    * Text input placeholder color, e.g. '#808080' or 'grey'.
    */
   textPlaceholder?: string
+  /**
+   * Text color for contraction interaction collapsible toggle label text, e.g. '#000000' or 'black'.
+   */
+  textDetailToggle?: string
+  /**
+   * Text color for interactive text, e.g. '#000000' or 'black'.
+   */
+  textInteractive?: string
+  /**
+   * Container background color for interactive text, e.g. '#FFFFFF' or 'white'.
+   */
+  interactiveBg?: string
+  /**
+   * Text color for tooltip content text, e.g. '#000000' or 'black'.
+   */
+  tooltipText?: string
+  /**
+   * Background color for tooltip content, e.g. '#FFFFFF' or 'white'.
+   */
+  tooltipBg?: string
   /**
    * Fill color for pincode input dot, e.g. '#FFFFFF' or 'white'.
    */
@@ -575,7 +831,7 @@ export interface Resources {
    */
   securityIntroMain?: string
   /*
-   * Arrow icon for the dropdown.
+   * Arrow icon for the dropdown and collapsible section.
    */
   dropdownArrow?: string
   /*
@@ -591,6 +847,22 @@ export interface Resources {
    */
   errorInfo?: string
   /**
+   * Token icon for the transaction request page.
+   */
+  transactionTokenIcon?: string
+  /**
+   * DApp icon for customization for the sign message page.
+   */
+  dAppIcon?: string
+  /**
+   * Tooltip icon for customization.
+   */
+  tipIcon?: string
+  /**
+   * Email icon for customization.
+   */
+  emailIcon?: string
+  /**
    * Font-family for customization.
    * E.g. \{ name: 'Edu TAS Beginner', url: 'https://fonts.googleapis.com/css2?family=Edu+TAS+Beginner:wght@400;500;600;700&display=swap' \}.
    */
@@ -605,11 +877,4 @@ export interface CustomLinks {
    * External link for the learn more button link.
    */
   learnMoreUrl?: string
-}
-
-export interface SsoSettings {
-  /**
-   * Controls whether the SSO UI is disabled.
-   */
-  disableConfirmationUI?: boolean
 }
