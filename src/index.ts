@@ -297,8 +297,8 @@ export class W3SSdk {
     configs?: Configs,
     onLoginComplete?: LoginCompleteCallback
   ) {
-    if (configs?.socialLoginConfigs?.apple && getApps().length === 0) {
-      this.firebaseApp = initializeApp(configs.socialLoginConfigs.apple)
+    if (configs?.loginConfigs?.apple && getApps().length === 0) {
+      this.firebaseApp = initializeApp(configs.loginConfigs.apple)
     } else if (getApps().length !== 0) {
       this.firebaseApp = getApps()[0]
     }
@@ -392,7 +392,7 @@ export class W3SSdk {
   }
 
   private performFacebookLogin() {
-    if (!this?.configs?.socialLoginConfigs?.facebook) {
+    if (!this?.configs?.loginConfigs?.facebook) {
       void this.onLoginComplete?.(
         {
           code: 155140,
@@ -404,7 +404,7 @@ export class W3SSdk {
       return
     }
 
-    const { appId, redirectUri } = this.configs.socialLoginConfigs.facebook
+    const { appId, redirectUri } = this.configs.loginConfigs.facebook
 
     const { url = '', state = '' } =
       this.generateOauthUrlWithParams(
@@ -418,7 +418,7 @@ export class W3SSdk {
   }
 
   private performGoogleLogin() {
-    if (!this.configs?.socialLoginConfigs?.google) {
+    if (!this.configs?.loginConfigs?.google) {
       void this.onLoginComplete?.(
         {
           code: 155140,
@@ -430,7 +430,7 @@ export class W3SSdk {
       return
     }
 
-    const { clientId, redirectUri } = this.configs.socialLoginConfigs.google
+    const { clientId, redirectUri } = this.configs.loginConfigs.google
 
     const {
       url = '',
@@ -732,16 +732,16 @@ export class W3SSdk {
             deviceInfo: this.deviceInfo,
             ssoVerification: {
               token: this.socialLoginToken,
-              deviceToken: this.configs?.socialLoginConfigs?.deviceToken,
+              deviceToken: this.configs?.loginConfigs?.deviceToken,
               deviceEncryptionKey:
-                this.configs?.socialLoginConfigs?.deviceEncryptionKey,
+                this.configs?.loginConfigs?.deviceEncryptionKey,
               socialLoginProvider: this.socialLoginProvider,
             },
             emailVerification: {
-              deviceToken: this.configs?.socialLoginConfigs?.deviceToken,
+              deviceToken: this.configs?.loginConfigs?.deviceToken,
               deviceEncryptionKey:
-                this.configs?.socialLoginConfigs?.deviceEncryptionKey,
-              otpToken: this.configs?.socialLoginConfigs?.otpToken,
+                this.configs?.loginConfigs?.deviceEncryptionKey,
+              otpToken: this.configs?.loginConfigs?.otpToken,
             },
           },
         },

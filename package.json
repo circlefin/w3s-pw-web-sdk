@@ -1,6 +1,6 @@
 {
   "name": "@circle-fin/w3s-pw-web-sdk",
-  "version": "1.0.18",
+  "version": "1.0.20",
   "description": "Javascript/Typescript SDK for Circle Programmable Wallets",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,7 +36,12 @@
   "engines": {
     "node": ">=10.0.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "firebase": "^10.12.1",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^9.0.1"
+  },
   "devDependencies": {
     "@types/jest": "^28.1.7",
     "@types/node": "^14.14.14",

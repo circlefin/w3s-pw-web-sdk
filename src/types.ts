@@ -188,9 +188,9 @@ export enum SocialLoginProvider {
 }
 
 /**
- * Social Login configurations, including Google, Facebook, and Apple.
+ * Login configurations, including Google, Facebook, and Apple.
  */
-export interface SocialLoginConfigs {
+export interface LoginConfigs {
   google?:
     | {
         /**
@@ -237,9 +237,9 @@ export interface Configs {
    */
   authentication?: Authentication
   /**
-   * Social login configurations.
+   * Login configurations.
    */
-  socialLoginConfigs?: SocialLoginConfigs
+  loginConfigs?: LoginConfigs
 }
 
 // Challenge Related
