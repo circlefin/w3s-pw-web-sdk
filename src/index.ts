@@ -105,11 +105,14 @@ export class W3SSdk {
 
   /**
    * Sets the application settings.
+   * This method will be deprecated in the future. Please use the constructor to set the application settings.
    * @param appSettings - Application settings.
    */
   setAppSettings(appSettings: AppSettings): void {
     if (this.configs) {
       this.configs.appSettings = appSettings
+    } else {
+      this.configs = { appSettings }
     }
   }
 
@@ -120,6 +123,13 @@ export class W3SSdk {
   setAuthentication(auth: Authentication): void {
     if (this.configs) {
       this.configs.authentication = auth
+    } else {
+      this.configs = {
+        appSettings: {
+          appId: '',
+        },
+        authentication: auth,
+      }
     }
   }
 
