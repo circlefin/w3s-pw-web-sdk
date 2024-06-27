@@ -19,6 +19,11 @@
     - [SecurityIntros](#securityintros)
     - [SecurityQuestions](#securityquestions)
     - [SecuritySummary](#securitysummary)
+    - [SsoConfirm](#ssoconfirm)
+    - [TransactionRequest](#transactionrequest)
+    - [ContractInteraction](#contractinteraction)
+    - [SignatureRequest](#signaturerequest)
+    - [EmailOtp](#emailotp)
     - [ThemeColor](#themecolor)
     - [Resources](#resources)
     - [CustomLinks](#customlinks)
@@ -31,14 +36,13 @@
         - [setThemeColor](#setthemecolor)
         - [setCustomLinks](#setcustomlinks)
         - [setOnForgotPin](#setonforgotpin)
+        - [setOnResendOtpEmail](#setonresendotpemail)
 
 ---
 
 ## Overview
 
-`w3s-pw-web-sdk` is a comprehensive toolkit designed for developers to enhance user interaction with W3S services through customization. This SDK excels in providing extensive customization options, allowing developers to tailor the user experience to meet specific needs. Key areas of customization include security questions, localization settings, UI themes, and resource management. With its flexible customization capabilities, the SDK empowers developers to create a more personalized and engaging interface for web3 service interactions.
-
-This customization-focused approach enables the integration of custom security questions, adaptation to various languages and regional settings, and the application of unique themes and resource elements. By leveraging these customization features, developers can significantly enhance the user experience, ensuring that the interface aligns with the branding and usability requirements of their applications.
+Programmable Wallets Web SDK provides customization functionality that enables developers to tailor the desired user experience for the end-users. The scope includes customization of security questions, adaptation to various languages and regional settings, predefined error message, and unique themes and resource elements.
 
 ## Enums
 
@@ -77,6 +81,7 @@ Holds localization settings.
 - `securityIntros` [\<SecurityIntros | undefined>](#securityintros) The settings for `SecurityIntros` screen.
 - `securityQuestions` [\<SecurityQuestions | undefined>](#securityquestions) The settings for `SecurityQuestions` screen.
 - `securitySummary` [\<SecuritySummary | undefined>](#securitysummary) The settings for `SecuritySummary` screen.
+- `ssoConfirm` [\<SsoConfirm | undefined>](#ssoconfirm) The settings for `SsoConfirm` screen.
 
 ### Common
 
@@ -85,6 +90,7 @@ Holds localization settings for common texts.
 - `continue` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Continue text
 - `showPin` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Show pin text
 - `hidePin` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Hide pin text
+- `confirm` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Confirm text
 
 ### ConfirmPincode
 
@@ -160,6 +166,93 @@ Holds localization settings for `SecuritySummary` screen.
 - `title` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Title text
 - `question` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Question text
 
+### SsoConfirm
+
+Holds localization settings for `SsoConfirm` screen.
+
+- `title` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Title text
+- `headline` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Headline text
+
+### TransactionRequest
+
+Holds localization settings for a transaction request screen.
+
+- `title` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Title text.
+- `subtitle` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Subtitle text.
+- `mainCurrency` [\<object | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#objects) Main currency details:
+  - `amount` [\<string | number | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#number_type) Main currency amount.
+  - `symbol` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Main currency symbol.
+- `exchangeValue` [\<object | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#objects) Exchange currency details:
+  - `amount` [\<string | number | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#number_type) Exchange currency amount.
+  - `symbol` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Exchange currency symbol.
+- `fromLabel` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) From label text.
+- `from` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) From address or label text.
+- `toLabel` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) To label text.
+- `to` [\<string[] | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) To addresses.
+- `networkFeeLabel` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Network fee label text.
+- `networkFeeTip` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Network fee tooltip text.
+- `networkFee` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Network fee amount.
+- `exchangeNetworkFee` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Exchange network fee amount.
+- `totalLabel` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Total label text.
+- `total` [\<string[] | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Total amounts.
+- `exchangeTotalValue` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Exchange total value.
+- `rawTxDescription` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Raw transaction description.
+- `rawTx` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Raw transaction data.
+
+### ContractInteraction
+
+Holds localization settings for a contract interaction screen.
+
+- `title` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Title text.
+- `subtitle` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Subtitle text.
+- `mainCurrency` [\<object | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#objects) Main currency details:
+  - `amount` [\<string | number | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#number_type) Main currency amount.
+  - `symbol` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Main currency symbol.
+- `exchangeValue` [\<object | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#objects) Exchange value details:
+  - `amount` [\<string | number | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#number_type) Exchange value amount.
+  - `symbol` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Exchange value symbol.
+- `fromLabel` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) From label text.
+- `from` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) From address or label text.
+- `contractAddressLabel` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Contract address label text.
+- `contractInfo` [\<string[] | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Contract information.
+- `networkFeeLabel` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Network fee label text.
+- `networkFeeTip` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Network fee tooltip text.
+- `networkFee` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Network fee amount.
+- `exchangeNetworkFee` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Exchange network fee amount.
+- `totalLabel` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Total label text.
+- `total` [\<string[] | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Total amounts.
+- `exchangeTotalValue` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Exchange total value.
+- `dataDetails` [\<object | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#objects) Data details:
+  - `dataDetailsLabel` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Data details label.
+  - `callData` [\<object | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#objects) Call data:
+    - `callDataLabel` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Call data label.
+    - `data` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Call data string.
+  - `abiInfo` [\<object | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#objects) ABI information:
+    - `functionNameLabel` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Function name label.
+    - `functionName` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Function name string.
+    - `parametersLabel` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Parameters label.
+    - `parameters` [\<string[] | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Parameters strings.
+
+### SignatureRequest
+
+Holds localization settings for a signature request screen.
+
+- `title` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Title text.
+- `contractName` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Contract name.
+- `contractUrl` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Contract URL.
+- `subtitle` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Subtitle text.
+- `descriptionLabel` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Description label text.
+- `description` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Description text.
+
+### EmailOtp
+
+Holds localization settings for an email OTP (One-Time Password) screen.
+
+- `title` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Title text.
+- `subtitle` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Subtitle text.
+- `resendHint` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Resend hint text.
+- `resend` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Resend button text.
+
 ### ThemeColor
 
 Holds customization color settings.
@@ -172,7 +265,7 @@ Holds customization color settings.
 - `error` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Error color, e.g. `'#FF0000'` or `'red'`.
 - `textMain` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Main text color, e.g. `'#000000'` or `'black'`.
 - `textMain2` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Main text color 2, e.g. `'#000000'` or `'black'`.
-- `textAuxiliary` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Auxiliary text color, e.g. `'#000000'` or `'black'`.
+- `textAuxiliary` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Primary auxiliary color, e.g. `'#000000'` or `'black'`.
 - `textAuxiliary2` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Auxiliary text color 2, e.g. `'#000000'` or `'black'`.
 - `textSummary` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Summary text color, e.g. `'#000000'` or `'black'`.
 - `textSummaryHighlight` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Summary highlight text color, e.g. `'#000000'` or `'black'`.
@@ -180,6 +273,8 @@ Holds customization color settings.
 - `pinDotBase` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Fill color for pincode input dot, e.g. `'#FFFFFF'` or `'white'`.
 - `pinDotBaseBorder` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Stroke color for pincode input dot, e.g. `'#000000'` or `'black'`.
 - `pinDotActivated` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Fill color for inputted pincode input dot, e.g. `'#0000ff'` or `'blue'`.
+- `enteredPinText` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Text color for entered pincode input, e.g. `'#000000'` or `'black'`.
+- `inputText` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Text color for text input, e.g. `'#000000'` or `'black'`.
 - `inputBorderFocused` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Outline color for text input on focused, e.g. `'#0000ff'` or `'blue'`.
 - `inputBorderFocusedError` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Outline color for text input when error, e.g. `'#FF0000'` or `'red'`.
 - `inputBg` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Background color for text input, e.g. `'#FFFFFF'` or `'white'`.
@@ -240,7 +335,7 @@ Holds custom links.
 Sets custom security questions.
 
 - `questions` [\<SecurityQuestion\[\] | undefined>](#questiontype) Array of `SecurityQuestion`
-- `requiredCount` [\<integer | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#number_type) Required count of `SecurityQuestion`. The value is 2 by default.
+- `requiredCount` [\<number | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#number_type) Required count of `SecurityQuestion`. The value is 2 by default.
 - `securityConfirmItems` [\<string[] | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#array_type) Array of customized disclaimers on `SecurityConfirm` screen. The value is `undefined` by default.
 
 ##### setLocalizations
@@ -273,3 +368,9 @@ Sets callback function for `ForgotPin` button click event
 
 - `onForgotPin` [\<Function | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function) Callback function
 - `shouldCloseModalOnForgotPin` [\<boolean | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#boolean_type) Should close modal on forgot pin click event
+
+##### setOnResendOtpEmail
+
+Sets callback function for `Resend OTP Email` button click event
+
+- `onResendOtpEmail` [\<Function | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function) Callback function
