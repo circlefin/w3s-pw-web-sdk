@@ -37,11 +37,12 @@ A minimal example for initiating the SDK is as follows:
 ```jsx
 import { W3SSdk } from '@circle-fin/w3s-pw-web-sdk'
 
-const sdk = new W3SSdk()
-
-sdk.setAppSettings({
-  appId: '<Your App Id>',
+const sdk = new W3SSdk({
+  appSettings: {
+    appId: '<Your App Id>'
+  },
 })
+
 sdk.setAuthentication({
   userToken: '<Your user token>',
   encryptionKey: '<Your encryption key>',
