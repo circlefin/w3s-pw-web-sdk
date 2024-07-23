@@ -19,7 +19,7 @@
     - [SecurityIntros](#securityintros)
     - [SecurityQuestions](#securityquestions)
     - [SecuritySummary](#securitysummary)
-    - [SsoConfirm](#ssoconfirm)
+    - [SocialEmailConfirm](#socialemailconfirm)
     - [TransactionRequest](#transactionrequest)
     - [ContractInteraction](#contractinteraction)
     - [SignatureRequest](#signaturerequest)
@@ -81,7 +81,7 @@ Holds localization settings.
 - `securityIntros` [\<SecurityIntros | undefined>](#securityintros) The settings for `SecurityIntros` screen.
 - `securityQuestions` [\<SecurityQuestions | undefined>](#securityquestions) The settings for `SecurityQuestions` screen.
 - `securitySummary` [\<SecuritySummary | undefined>](#securitysummary) The settings for `SecuritySummary` screen.
-- `ssoConfirm` [\<SsoConfirm | undefined>](#ssoconfirm) The settings for `SsoConfirm` screen.
+- `socialEmailConfirm` [\<SocialEmailConfirm | undefined>](#socialemailconfirm) The settings for `SocialEmailConfirm` screen.
 
 ### Common
 
@@ -166,9 +166,9 @@ Holds localization settings for `SecuritySummary` screen.
 - `title` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Title text
 - `question` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Question text
 
-### SsoConfirm
+### SocialEmailConfirm
 
-Holds localization settings for `SsoConfirm` screen.
+Holds localization settings for `SocialEmailConfirm` screen.
 
 - `title` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Title text
 - `headline` [\<string | undefined>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Headline text
