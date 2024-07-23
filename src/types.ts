@@ -249,7 +249,7 @@ export interface Challenge {
    */
   challengeId: string
   /**
-   * SSO user secret.
+   * Social login user secret.
    */
   userSecret?: string
 }
@@ -338,8 +338,8 @@ export interface SignTransactionResult extends ChallengeResult {
 export interface OAuthInfo {
   provider: SocialLoginProvider
   scope?: string[]
-  ssoUserUUID?: string
-  ssoUserInfo?: {
+  socialUserUUID?: string
+  socialUserInfo?: {
     email?: string
     name?: string
     phone?: string
@@ -490,7 +490,7 @@ export interface SecuritySummary {
   question?: string
 }
 
-export interface SsoConfirm {
+export interface SocialEmailConfirm {
   title?: string
   headline?: string
 }
@@ -599,7 +599,7 @@ export interface Localizations {
   securityIntros?: SecurityIntros
   securityQuestions?: SecurityQuestions
   securitySummary?: SecuritySummary
-  ssoConfirm?: SsoConfirm
+  socialEmailConfirm?: SocialEmailConfirm
   transactionRequest?: TransactionRequest
   contractInteraction?: ContractInteraction
   signatureRequest?: SignatureRequest

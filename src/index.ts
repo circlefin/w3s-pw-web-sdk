@@ -191,7 +191,7 @@ export class W3SSdk {
    */
   verifyOtp() {
     this.subscribeMessage()
-    this.appendIframe(true, 'sso/verify-email')
+    this.appendIframe(true, 'social/verify-email')
 
     setTimeout(() => {
       if (!this.receivedResponseFromService) {
@@ -616,7 +616,7 @@ export class W3SSdk {
 
   private verifyTokenViaService(): void {
     this.subscribeMessage()
-    this.appendIframe(false, 'sso/verify-token')
+    this.appendIframe(false, 'social/verify-token')
 
     setTimeout(() => {
       if (!this.receivedResponseFromService) {
@@ -740,7 +740,7 @@ export class W3SSdk {
               customLinks: this.customLinks,
             },
             deviceInfo: this.deviceInfo,
-            ssoVerification: {
+            socialVerification: {
               token: this.socialLoginToken,
               deviceToken: this.configs?.loginConfigs?.deviceToken,
               deviceEncryptionKey:
