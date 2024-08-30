@@ -147,16 +147,9 @@ enum enum ErrorCode {
   insecurePinCode = 155704,
   hintsMatchAnswers = 155705,
   networkError = 155706,
-  biometricsSettingNotEnabled = 155708,
-  deviceNotSupportBiometrics = 155709,
-  biometricsKeyPermanentlyInvalidated = 155710,
-  biometricsUserSkip = 155711,
-  biometricsUserDisableForPin = 155712,
-  biometricsUserLockout = 155713,
-  biometricsUserLockoutPermanent = 155714,
-  biometricsUserNotAllowPermission = 155715,
-  biometricsInternalError = 155716,
-  invalidUserSecret= 155718,
+  userSecretMissing = 155717,
+  invalidUserTokenFormat= 155718,
+  userTokenMismatch = 155719,
   walletIdNotFound = 156001,
   tokenIdNotFound = 156002,
   transactionIdNotFound = 156003,
@@ -271,8 +264,8 @@ Holds the OAuth information.
 
 - `provider` [\<SocialLoginProvider>](#socialloginprovider) Social login
 - `scope` [\<string[]>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) OAuth scope
-- ssoUserUUID [\<string>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) SSO user UUID
-- `ssoUserInfo` [\<object>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#objects) SSO user information
+- socialUserUUID [\<string>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Social login user UUID
+- `socialUserInfo` [\<object>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#objects) Social login user information
   - email [\<string>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Email
   - name [\<string>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Name
   - phone [\<string>](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#string_type) Phone

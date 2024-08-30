@@ -1,6 +1,7 @@
 const path = require('path')
 const webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 
 module.exports = {
   entry: './src/index.js',
@@ -16,7 +17,17 @@ module.exports = {
       $: 'jquery',
       jQuery: 'jquery',
     }),
+    new NodePolyfillPlugin(),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+      Buffer: ['buffer', 'Buffer'],
+    })
   ],
+  resolve: {
+    alias: {
+      process: 'process/browser',
+    },
+  },
   devServer: {
     static: {
       directory: path.join(__dirname, 'dist'),

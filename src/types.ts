@@ -139,17 +139,9 @@ export enum ErrorCode {
   insecurePinCode = 155704,
   hintsMatchAnswers = 155705,
   networkError = 155706,
-  biometricsSettingNotEnabled = 155708,
-  deviceNotSupportBiometrics = 155709,
-  biometricsKeyPermanentlyInvalidated = 155710,
-  biometricsUserSkip = 155711,
-  biometricsUserDisableForPin = 155712,
-  biometricsUserLockout = 155713,
-  biometricsUserLockoutPermanent = 155714,
-  biometricsUserNotAllowPermission = 155715,
-  biometricsInternalError = 155716,
+
   userSecretMissing = 155717,
-  invalidUserSecret = 155718,
+  invalidUserTokenFormat = 155718,
   userTokenMismatch = 155719,
 
   walletIdNotFound = 156001,
@@ -249,7 +241,7 @@ export interface Challenge {
    */
   challengeId: string
   /**
-   * SSO user secret.
+   * Social login user secret.
    */
   userSecret?: string
 }
@@ -338,8 +330,8 @@ export interface SignTransactionResult extends ChallengeResult {
 export interface OAuthInfo {
   provider: SocialLoginProvider
   scope?: string[]
-  ssoUserUUID?: string
-  ssoUserInfo?: {
+  socialUserUUID?: string
+  socialUserInfo?: {
     email?: string
     name?: string
     phone?: string
@@ -391,12 +383,12 @@ export type ChallengeCompleteCallback = (
     | ChallengeResult
     | SignMessageResult
     | SignTransactionResult
-    | undefined
+    | undefined,
 ) => Promise<void> | void
 
 export type LoginCompleteCallback = (
   error: Error | undefined,
-  result: SocialLoginResult | EmailLoginResult | undefined
+  result: SocialLoginResult | EmailLoginResult | undefined,
 ) => Promise<void> | void
 
 export interface PostMessageEvent extends MessageEvent {
@@ -490,7 +482,7 @@ export interface SecuritySummary {
   question?: string
 }
 
-export interface SsoConfirm {
+export interface SocialEmailConfirm {
   title?: string
   headline?: string
 }
@@ -599,7 +591,7 @@ export interface Localizations {
   securityIntros?: SecurityIntros
   securityQuestions?: SecurityQuestions
   securitySummary?: SecuritySummary
-  ssoConfirm?: SsoConfirm
+  socialEmailConfirm?: SocialEmailConfirm
   transactionRequest?: TransactionRequest
   contractInteraction?: ContractInteraction
   signatureRequest?: SignatureRequest
