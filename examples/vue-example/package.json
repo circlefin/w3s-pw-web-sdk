@@ -8,7 +8,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@circle-fin/w3s-pw-web-sdk": "^1.0.0",
+    "@circle-fin/w3s-pw-web-sdk": "^1.1.1",
+    "buffer": "^6.0.3",
+    "process": "^0.11.10",
+    "vite-plugin-node-polyfills": "^0.22.0",
     "vue": "^3.2.47"
   },
   "devDependencies": {
