@@ -22,6 +22,8 @@ import {
 import { decode } from 'jsonwebtoken'
 import { v4 as uuidv4 } from 'uuid'
 
+import packageInfo from '../package.json'
+
 import { SocialLoginProvider } from './types'
 
 import type {
@@ -43,12 +45,10 @@ import type { FirebaseApp } from 'firebase/app'
 import type { UserCredential } from 'firebase/auth'
 import type { JwtPayload } from 'jsonwebtoken'
 
-const packageInfo = require('../package.json') as { version: string }
-
 export class W3SSdk {
   private readonly serviceUrl = 'https://pw-auth.circle.com'
   private static instance: W3SSdk | null = null
-  private readonly iframe: HTMLIFrameElement
+  private readonly iframe!: HTMLIFrameElement
   private readonly window: Window = window
   private configs?: Configs
   private challenge?: Challenge
@@ -181,7 +181,7 @@ export class W3SSdk {
           code: 155140,
           message: 'Invalid social login provider',
         },
-        undefined
+        undefined,
       )
     }
   }
@@ -191,7 +191,7 @@ export class W3SSdk {
    */
   verifyOtp() {
     this.subscribeMessage()
-    this.appendIframe(true, 'sso/verify-email')
+    this.appendIframe(true, 'social/verify-email')
 
     setTimeout(() => {
       if (!this.receivedResponseFromService) {
@@ -200,7 +200,7 @@ export class W3SSdk {
             code: 155706,
             message: 'Network error',
           },
-          undefined
+          undefined,
         )
       }
     }, 1000 * 10)
@@ -226,7 +226,7 @@ export class W3SSdk {
   setCustomSecurityQuestions(
     questions?: SecurityQuestion[] | null,
     requiredCount = 2,
-    securityConfirmItems?: string[]
+    securityConfirmItems?: string[],
   ): void {
     this.securityQuestions = questions
     this.securityConfirmItems = securityConfirmItems
@@ -277,7 +277,7 @@ export class W3SSdk {
    */
   setOnForgotPin(
     onForgotPin: () => void,
-    shouldCloseModalOnForgotPin = false
+    shouldCloseModalOnForgotPin = false,
   ): void {
     this.shouldCloseModalOnForgotPin = shouldCloseModalOnForgotPin
 
@@ -305,7 +305,7 @@ export class W3SSdk {
    */
   private setupInstance(
     configs?: Configs,
-    onLoginComplete?: LoginCompleteCallback
+    onLoginComplete?: LoginCompleteCallback,
   ) {
     if (configs?.loginConfigs?.apple && getApps().length === 0) {
       this.firebaseApp = initializeApp(configs.loginConfigs.apple)
@@ -375,7 +375,7 @@ export class W3SSdk {
             code: 155706,
             message: 'Network error',
           },
-          undefined
+          undefined,
         )
       }
     }, 1000 * 10)
@@ -388,7 +388,7 @@ export class W3SSdk {
           code: 155140,
           message: 'Please provide the Apple social login configurations.',
         },
-        undefined
+        undefined,
       )
 
       return
@@ -408,7 +408,7 @@ export class W3SSdk {
           code: 155140,
           message: 'Please provide the Facebook social login configurations.',
         },
-        undefined
+        undefined,
       )
 
       return
@@ -420,7 +420,7 @@ export class W3SSdk {
       this.generateOauthUrlWithParams(
         SocialLoginProvider.FACEBOOK,
         appId,
-        redirectUri
+        redirectUri,
       ) || {}
 
     this.saveOAuthInfo(SocialLoginProvider.FACEBOOK, state)
@@ -434,7 +434,7 @@ export class W3SSdk {
           code: 155140,
           message: 'Please provide the Google social login configurations.',
         },
-        undefined
+        undefined,
       )
 
       return
@@ -449,7 +449,7 @@ export class W3SSdk {
     } = this.generateOauthUrlWithParams(
       SocialLoginProvider.GOOGLE,
       clientId,
-      redirectUri
+      redirectUri,
     ) || {}
 
     this.saveOAuthInfo(SocialLoginProvider.GOOGLE, state, nonce)
@@ -466,7 +466,7 @@ export class W3SSdk {
   private generateOauthUrlWithParams(
     provider: SocialLoginProvider,
     id: string,
-    redirectUri: string
+    redirectUri: string,
   ):
     | {
         url: string
@@ -478,14 +478,14 @@ export class W3SSdk {
 
     if (provider === SocialLoginProvider.GOOGLE) {
       const scope = encodeURIComponent(
-        'openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
+        'openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
       )
       const responseType = encodeURIComponent('id_token token')
       const nonce = uuidv4()
 
       return {
         url: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${id}&redirect_uri=${encodeURIComponent(
-          redirectUri
+          redirectUri,
         )}&scope=${scope}&state=${state}&response_type=${responseType}&nonce=${nonce}`,
         state,
         nonce,
@@ -495,7 +495,7 @@ export class W3SSdk {
 
       return {
         url: `https://www.facebook.com/v13.0/dialog/oauth?client_id=${id}&redirect_uri=${encodeURIComponent(
-          redirectUri
+          redirectUri,
         )}&scope=${scope}&state=${state}&response_type=token`,
         state,
       }
@@ -506,7 +506,7 @@ export class W3SSdk {
    */
   private async execSocialLoginStatusCheck(): Promise<void> {
     const socialLoginProvider = this.window.localStorage.getItem(
-      'socialLoginProvider'
+      'socialLoginProvider',
     ) as SocialLoginProvider
 
     if (socialLoginProvider === SocialLoginProvider.APPLE) {
@@ -543,7 +543,7 @@ export class W3SSdk {
    * @param socialLoginProvider - Social login provider.
    */
   private handleHashLoginResponse(
-    socialLoginProvider: SocialLoginProvider
+    socialLoginProvider: SocialLoginProvider,
   ): void {
     const hashParams = new URLSearchParams(window.location.hash.slice(1))
 
@@ -610,13 +610,13 @@ export class W3SSdk {
         code: 155140,
         message: 'Failed to validate the idToken / accessToken',
       },
-      undefined
+      undefined,
     )
   }
 
   private verifyTokenViaService(): void {
     this.subscribeMessage()
-    this.appendIframe(false, 'sso/verify-token')
+    this.appendIframe(false, 'social/verify-token')
 
     setTimeout(() => {
       if (!this.receivedResponseFromService) {
@@ -625,7 +625,7 @@ export class W3SSdk {
             code: 155706,
             message: 'Network error',
           },
-          undefined
+          undefined,
         )
       }
     }, 1000 * 10)
@@ -640,7 +640,7 @@ export class W3SSdk {
   private saveOAuthInfo(
     provider: SocialLoginProvider,
     state?: string,
-    nonce?: string
+    nonce?: string,
   ): void {
     this.window.localStorage.setItem('socialLoginProvider', provider)
     this.window.localStorage.setItem('state', state ?? '')
@@ -662,7 +662,7 @@ export class W3SSdk {
           code: 155140,
           message: 'Failed to validate the idToken / accessToken',
         },
-        undefined
+        undefined,
       )
 
       return false
@@ -720,7 +720,7 @@ export class W3SSdk {
     if (event.data?.onFrameReady) {
       this.receivedResponseFromService = true
       const iframe = this.window.document.getElementById(
-        'sdkIframe'
+        'sdkIframe',
       ) as HTMLIFrameElement
       iframe?.contentWindow?.postMessage(
         {
@@ -740,7 +740,7 @@ export class W3SSdk {
               customLinks: this.customLinks,
             },
             deviceInfo: this.deviceInfo,
-            ssoVerification: {
+            socialVerification: {
               token: this.socialLoginToken,
               deviceToken: this.configs?.loginConfigs?.deviceToken,
               deviceEncryptionKey:
@@ -755,13 +755,13 @@ export class W3SSdk {
             },
           },
         },
-        this.serviceUrl
+        this.serviceUrl,
       )
     } else if (event.data?.onForgotPin) {
       this.onForgotPin?.()
     } else if (event.data?.onComplete) {
       const iframe = this.window.document.getElementById(
-        'sdkIframe'
+        'sdkIframe',
       ) as HTMLIFrameElement
       iframe?.parentNode?.removeChild(iframe)
 
@@ -783,7 +783,7 @@ export class W3SSdk {
     } else if (event.data?.onSocialLoginVerified) {
       void this.onLoginComplete?.(
         event.data.onSocialLoginVerified.error,
-        event.data.onSocialLoginVerified.result
+        event.data.onSocialLoginVerified.result,
       )
 
       this.closeModal()
@@ -791,7 +791,7 @@ export class W3SSdk {
     } else if (event.data?.onEmailLoginVerified) {
       void this.onLoginComplete?.(
         event.data.onEmailLoginVerified.error,
-        event.data.onEmailLoginVerified.result
+        event.data.onEmailLoginVerified.result,
       )
 
       if (
@@ -816,7 +816,7 @@ export class W3SSdk {
    */
   private closeModal(): void {
     const iframe = this.window.document.getElementById(
-      'sdkIframe'
+      'sdkIframe',
     ) as HTMLIFrameElement
     iframe?.parentNode?.removeChild(iframe)
   }

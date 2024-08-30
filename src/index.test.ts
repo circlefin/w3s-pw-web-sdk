@@ -45,7 +45,7 @@ describe('W3SSdk', () => {
     expect(addEventListenerSpy).toHaveBeenCalledWith(
       'message',
       expect.any(Function),
-      false
+      false,
     )
   })
 
@@ -97,7 +97,7 @@ describe('W3SSdk', () => {
         code: 1,
         message: 'Some error',
       } as Error,
-      undefined
+      undefined,
     )
   })
 })
