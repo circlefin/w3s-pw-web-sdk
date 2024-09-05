@@ -6,11 +6,11 @@
     "target": "es6",
     "strictNullChecks": true,
     "skipLibCheck": true,
-    "types": ["node", "jest"],
+    "types": ["node"],
     "allowJs": true,
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "**/*.test.ts"]
 }
