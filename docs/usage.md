@@ -51,6 +51,8 @@ Enumerates the types of challenges supported.
 
 ```typescript
 enum ChallengeType {
+  INITIALIZE,
+  SET_PIN,
   RESTORE_PIN,
   SET_SECURITY_QUESTIONS,
   CREATE_WALLET,
