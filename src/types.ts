@@ -19,6 +19,7 @@ import type { FirebaseOptions } from 'firebase/app'
  * ChallengeType.
  */
 export enum ChallengeType {
+  INITIALIZE = 'INITIALIZE',
   SET_PIN = 'SET_PIN',
   CHANGE_PIN = 'CHANGE_PIN',
   RESTORE_PIN = 'RESTORE_PIN',
