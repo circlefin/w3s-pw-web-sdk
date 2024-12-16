@@ -16,14 +16,25 @@
 /* eslint-disable  @typescript-eslint/no-unsafe-argument */
 /* eslint-disable  @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable  @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable  @typescript-eslint/no-unsafe-return */
 
 /**
  * @jest-environment jsdom
  */
+import { FirebaseError } from 'firebase/app'
+import * as firebaseAuth from 'firebase/auth'
+
+import { SocialLoginProvider } from './types'
 
 import { W3SSdk } from './'
 
-import type { ChallengeResult, Error } from './types'
+import type { ChallengeResult, Configs, Error } from './types'
+
+jest.mock('firebase/auth', () => ({
+  ...jest.requireActual('firebase/auth'),
+  signInWithPopup: jest.fn(),
+  getAuth: jest.fn(),
+}))
 
 describe('W3SSdk', () => {
   let sdk: W3SSdk
@@ -99,5 +110,190 @@ describe('W3SSdk', () => {
       } as Error,
       undefined,
     )
+  })
+})
+
+describe('W3SSdk > Apple OAuth', () => {
+  const localStorageMock = (() => {
+    let store: { [key: string]: string } = {}
+
+    return {
+      getItem(key: string): string {
+        return store[key] || ''
+      },
+      setItem(key: string, value: string): void {
+        store[key] = value
+      },
+      removeItem(key: string): void {
+        delete store[key]
+      },
+      clear(): void {
+        store = {}
+      },
+      length: 0,
+      key(index: number): string | null {
+        return Object.keys(store)[index] || null
+      },
+    }
+  })()
+
+  Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+
+  let sdk: W3SSdk
+  const configs: Configs = {
+    appSettings: {
+      appId: 'test-app-id',
+    },
+    loginConfigs: {
+      deviceToken: 'device-token',
+      deviceEncryptionKey: 'device-encryption-key',
+      apple: {
+        apiKey: 'test-api-key',
+        authDomain: 'test-auth-domain',
+        projectId: 'test-project-id',
+        storageBucket: 'test-storage-bucket',
+        messagingSenderId: 'test-messaging-sender-id',
+        appId: 'test-app-id',
+      },
+    },
+  }
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+    window.localStorage.clear()
+  })
+
+  it('should perform Apple login successfully', async () => {
+    const onLoginComplete = jest.fn()
+    sdk = new W3SSdk(configs, onLoginComplete)
+
+    const mockFirebaseApp = {}
+    Object.defineProperty(sdk, 'firebaseApp', {
+      get: jest.fn(() => mockFirebaseApp),
+      configurable: true,
+    })
+
+    // Mock signInWithPopup to resolve to a UserCredential
+    const userCredentialMock = {
+      user: { uid: 'test-uid' },
+      credential: { idToken: 'test-id-token' },
+    }
+    ;(firebaseAuth.signInWithPopup as jest.Mock).mockResolvedValueOnce(
+      userCredentialMock,
+    )
+
+    // Mock extractTokenFromResultAndSave to return true
+    const extractTokenSpy = jest
+      .spyOn(sdk as any, 'extractTokenFromResultAndSave')
+      .mockReturnValue(true)
+
+    // Mock verifyTokenViaService
+    const verifyTokenSpy = jest
+      .spyOn(sdk as any, 'verifyTokenViaService')
+      .mockImplementation(() => {})
+
+    await sdk.performLogin(SocialLoginProvider.APPLE)
+
+    expect(firebaseAuth.signInWithPopup).toHaveBeenCalled()
+    expect(extractTokenSpy).toHaveBeenCalledWith(userCredentialMock)
+    expect(verifyTokenSpy).toHaveBeenCalled()
+
+    expect(window.localStorage.getItem('socialLoginProvider')).toBe('')
+  })
+
+  it('should handle signInWithPopup error during Apple login', async () => {
+    const onLoginComplete = jest.fn()
+    sdk = new W3SSdk(configs, onLoginComplete)
+
+    // Simulate firebaseApp being initialized
+    const mockFirebaseApp = {}
+    Object.defineProperty(sdk, 'firebaseApp', {
+      get: jest.fn(() => mockFirebaseApp),
+      configurable: true,
+    })
+
+    // Mock getAuth
+    const mockAuth = { getProvider: jest.fn() }
+    ;(firebaseAuth.getAuth as jest.Mock).mockReturnValue(mockAuth)
+
+    // Mock signInWithPopup to reject
+    const error = new Error('sign in error')
+    ;(firebaseAuth.signInWithPopup as jest.Mock).mockRejectedValueOnce(error)
+
+    // Mock handleLoginFailure
+    const handleLoginFailureSpy = jest
+      .spyOn(sdk as any, 'handleLoginFailure')
+      .mockImplementation(() => {})
+
+    await sdk.performLogin(SocialLoginProvider.APPLE)
+
+    expect(firebaseAuth.signInWithPopup).toHaveBeenCalled()
+    expect(handleLoginFailureSpy).toHaveBeenCalled()
+  })
+
+  it('should not handle signInWithPopup auth/cancelled-popup-request error during Apple login', async () => {
+    const onLoginComplete = jest.fn()
+    sdk = new W3SSdk(configs, onLoginComplete)
+
+    // Simulate firebaseApp being initialized
+    const mockFirebaseApp = {}
+    Object.defineProperty(sdk, 'firebaseApp', {
+      get: jest.fn(() => mockFirebaseApp),
+      configurable: true,
+    })
+
+    // Mock getAuth
+    const mockAuth = { getProvider: jest.fn() }
+    ;(firebaseAuth.getAuth as jest.Mock).mockReturnValue(mockAuth)
+
+    // Mock signInWithPopup to reject
+    const error = new FirebaseError(
+      'auth/cancelled-popup-request',
+      'sign in error',
+    )
+    ;(firebaseAuth.signInWithPopup as jest.Mock).mockRejectedValueOnce(error)
+
+    // Mock handleLoginFailure
+    const handleLoginFailureSpy = jest
+      .spyOn(sdk as any, 'handleLoginFailure')
+      .mockImplementation(() => {})
+
+    await sdk.performLogin(SocialLoginProvider.APPLE)
+
+    expect(firebaseAuth.signInWithPopup).toHaveBeenCalled()
+    expect(handleLoginFailureSpy).toHaveBeenCalledTimes(0)
+  })
+
+  it('should not handle signInWithPopup auth/popup-closed-by-user error during Apple login', async () => {
+    const onLoginComplete = jest.fn()
+    sdk = new W3SSdk(configs, onLoginComplete)
+
+    // Simulate firebaseApp being initialized
+    const mockFirebaseApp = {}
+    Object.defineProperty(sdk, 'firebaseApp', {
+      get: jest.fn(() => mockFirebaseApp),
+      configurable: true,
+    })
+
+    // Mock getAuth
+    const mockAuth = { getProvider: jest.fn() }
+    ;(firebaseAuth.getAuth as jest.Mock).mockReturnValue(mockAuth)
+
+    // Mock signInWithPopup to reject
+    const error = new FirebaseError(
+      'auth/popup-closed-by-user',
+      'sign in error',
+    )
+    ;(firebaseAuth.signInWithPopup as jest.Mock).mockRejectedValueOnce(error)
+
+    // Mock handleLoginFailure
+    const handleLoginFailureSpy = jest
+      .spyOn(sdk as any, 'handleLoginFailure')
+      .mockImplementation(() => {})
+
+    await sdk.performLogin(SocialLoginProvider.APPLE)
+
+    expect(firebaseAuth.signInWithPopup).toHaveBeenCalled()
+    expect(handleLoginFailureSpy).toHaveBeenCalledTimes(0)
   })
 })
