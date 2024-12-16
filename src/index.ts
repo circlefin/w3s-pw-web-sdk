@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { getApps, initializeApp } from 'firebase/app'
+import { FirebaseError, getApps, initializeApp } from 'firebase/app'
 import {
   OAuthProvider,
   getAuth,
   getRedirectResult,
-  signInWithRedirect,
+  signInWithPopup,
 } from 'firebase/auth'
 import { decode } from 'jsonwebtoken'
 import { v4 as uuidv4 } from 'uuid'
@@ -168,13 +168,13 @@ export class W3SSdk {
    * Performs social login.
    * @param provider - Social login provider.
    */
-  performLogin(provider: SocialLoginProvider): void {
+  async performLogin(provider: SocialLoginProvider): Promise<void> {
     if (provider === SocialLoginProvider.GOOGLE) {
       this.performGoogleLogin()
     } else if (provider === SocialLoginProvider.FACEBOOK) {
       this.performFacebookLogin()
     } else if (provider === SocialLoginProvider.APPLE) {
-      this.performAppleLogin()
+      await this.performAppleLogin()
     } else {
       void this.onLoginComplete?.(
         {
@@ -381,7 +381,7 @@ export class W3SSdk {
     }, 1000 * 10)
   }
 
-  private performAppleLogin() {
+  private async performAppleLogin() {
     if (!this.firebaseApp) {
       void this.onLoginComplete?.(
         {
@@ -398,7 +398,26 @@ export class W3SSdk {
     const provider = new OAuthProvider('apple.com')
     const auth = getAuth(this.firebaseApp)
 
-    void signInWithRedirect(auth, provider)
+    try {
+      const cred = await signInWithPopup(auth, provider)
+
+      if (!this.extractTokenFromResultAndSave(cred)) {
+        return
+      }
+
+      // Send the token to the verification service and reset the social login provider
+      this.verifyTokenViaService()
+      this.window.localStorage.setItem('socialLoginProvider', '')
+    } catch (error) {
+      if (
+        (error instanceof FirebaseError &&
+          error.code !== 'auth/cancelled-popup-request' &&
+          error.code !== 'auth/popup-closed-by-user') ||
+        !(error instanceof FirebaseError)
+      ) {
+        this.handleLoginFailure()
+      }
+    }
   }
 
   private performFacebookLogin() {
