@@ -410,11 +410,12 @@ export class W3SSdk {
       this.window.localStorage.setItem('socialLoginProvider', '')
     } catch (error) {
       if (
-        (error instanceof FirebaseError &&
-          error.code !== 'auth/cancelled-popup-request' &&
-          error.code !== 'auth/popup-closed-by-user') ||
-        !(error instanceof FirebaseError)
+        error instanceof FirebaseError &&
+        error.code !== 'auth/cancelled-popup-request' &&
+        error.code !== 'auth/popup-closed-by-user'
       ) {
+        await this.handleFirebaseFailure(error)
+      } else if (!(error instanceof FirebaseError)) {
         this.handleLoginFailure()
       }
     }
@@ -621,6 +622,16 @@ export class W3SSdk {
     }
 
     return false
+  }
+
+  private async handleFirebaseFailure(error: FirebaseError): Promise<void> {
+    await this.onLoginComplete?.(
+      {
+        code: -1,
+        message: error.message,
+      },
+      undefined,
+    )
   }
 
   private handleLoginFailure(): void {
