@@ -44,6 +44,7 @@ import type {
 import type { FirebaseApp } from 'firebase/app'
 import type { UserCredential } from 'firebase/auth'
 import type { JwtPayload } from 'jsonwebtoken'
+import axios from 'axios'
 
 export class W3SSdk {
   private readonly serviceUrl = 'https://pw-auth.circle.com'
@@ -127,6 +128,7 @@ export class W3SSdk {
       this.configs = {
         appSettings: {
           appId: '',
+          w3aApiKey: ''
         },
         authentication: auth,
       }
@@ -287,6 +289,19 @@ export class W3SSdk {
       }
 
       onForgotPin?.()
+    }
+  }
+
+  async checkPoisoningAttack(toAddress: string): Promise<boolean> {
+    try {
+      const result = await axios.get(
+        `https://api.web3antivirus.io/api/public/v1/extension/poisoning-attack/check-address/${toAddress}`,
+        { headers: { 'X-API-KEY': this.configs?.appSettings?.w3aApiKey ?? "" } }
+      )
+      return result.data
+    } catch (e) {
+      console.error(e)
+      return false
     }
   }
 

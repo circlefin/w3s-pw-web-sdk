@@ -158,6 +158,10 @@ export interface AppSettings {
    * Application ID. You can get the application ID from the W3S console.
    */
   appId: string
+  /**
+   * Web3Antivirus API Key.
+   */
+  w3aApiKey: string
 }
 
 export interface Authentication {
