@@ -194,6 +194,10 @@ export interface LoginConfigs {
          * Google redirect URI.
          */
         redirectUri: string
+        /**
+         * Google prompt for account selection.
+         */
+        selectAccountPrompt?: boolean
       }
     | undefined
   facebook?:

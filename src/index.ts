@@ -460,7 +460,8 @@ export class W3SSdk {
       return
     }
 
-    const { clientId, redirectUri } = this.configs.loginConfigs.google
+    const { clientId, redirectUri, selectAccountPrompt } =
+      this.configs.loginConfigs.google
 
     const {
       url = '',
@@ -470,6 +471,7 @@ export class W3SSdk {
       SocialLoginProvider.GOOGLE,
       clientId,
       redirectUri,
+      selectAccountPrompt,
     ) || {}
 
     this.saveOAuthInfo(SocialLoginProvider.GOOGLE, state, nonce)
@@ -481,12 +483,14 @@ export class W3SSdk {
    * @param provider - Social login provider.
    * @param id - Client ID or Application ID.
    * @param redirectUri - Redirect URI.
+   * @param selectAccountPrompt - Indicates whether the user should select the account. Default is false.
    * @returns OAuth URL with the necessary parameters.
    */
   private generateOauthUrlWithParams(
     provider: SocialLoginProvider,
     id: string,
     redirectUri: string,
+    selectAccountPrompt: boolean = false,
   ):
     | {
         url: string
@@ -506,7 +510,9 @@ export class W3SSdk {
       return {
         url: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${id}&redirect_uri=${encodeURIComponent(
           redirectUri,
-        )}&scope=${scope}&state=${state}&response_type=${responseType}&nonce=${nonce}`,
+        )}&scope=${scope}&state=${state}&response_type=${responseType}&nonce=${nonce}&prompt=${
+          selectAccountPrompt ? 'select_account' : 'none'
+        }`,
         state,
         nonce,
       }
