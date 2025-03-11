@@ -312,3 +312,104 @@ describe('W3SSdk > Apple OAuth', () => {
     expect(handleLoginFailureSpy).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('W3SSdk > Google OAuth > selectAccountPrompt is true', () => {
+  let sdk: W3SSdk
+  const configs: Configs = {
+    appSettings: {
+      appId: 'test-app-id',
+    },
+    loginConfigs: {
+      deviceToken: 'device-token',
+      deviceEncryptionKey: 'device-encryption-key',
+      google: {
+        clientId: 'test-client-id',
+        redirectUri: 'test-redirect-uri',
+        selectAccountPrompt: true,
+      },
+    },
+  }
+
+  beforeEach(() => {
+    ;(W3SSdk as any).instance = null
+    jest.resetAllMocks()
+
+    const onLoginComplete = jest.fn()
+    sdk = new W3SSdk(configs, onLoginComplete)
+  })
+
+  it('should generate the right parameters', async () => {
+    const performGoogleLoginSpy = jest.spyOn(sdk as any, 'performGoogleLogin')
+
+    const generateOauthUrlWithParamsSpy = jest.spyOn(
+      sdk as any,
+      'generateOauthUrlWithParams',
+    )
+
+    await sdk.performLogin(SocialLoginProvider.GOOGLE)
+
+    expect(performGoogleLoginSpy).toHaveBeenCalled()
+    expect(generateOauthUrlWithParamsSpy).toHaveBeenLastCalledWith(
+      'Google',
+      'test-client-id',
+      'test-redirect-uri',
+      true,
+    )
+  })
+
+  it('should update the global this location href correctly', async () => {
+    await sdk.performLogin(SocialLoginProvider.GOOGLE)
+
+    expect(window.location.href).toContain('prompt=select_account')
+  })
+})
+
+describe('W3SSdk > Google OAuth > selectAccountPrompt is false or empty', () => {
+  let sdk: W3SSdk
+  const configs: Configs = {
+    appSettings: {
+      appId: 'test-app-id',
+    },
+    loginConfigs: {
+      deviceToken: 'device-token',
+      deviceEncryptionKey: 'device-encryption-key',
+      google: {
+        clientId: 'test-client-id',
+        redirectUri: 'test-redirect-uri',
+      },
+    },
+  }
+
+  beforeEach(() => {
+    ;(W3SSdk as any).instance = null
+    jest.resetAllMocks()
+
+    const onLoginComplete = jest.fn()
+    sdk = new W3SSdk(configs, onLoginComplete)
+  })
+
+  it('should generate the right parameters', async () => {
+    const performGoogleLoginSpy = jest.spyOn(sdk as any, 'performGoogleLogin')
+
+    const generateOauthUrlWithParamsSpy = jest.spyOn(
+      sdk as any,
+      'generateOauthUrlWithParams',
+    )
+
+    await sdk.performLogin(SocialLoginProvider.GOOGLE)
+
+    expect(performGoogleLoginSpy).toHaveBeenCalled()
+    expect(generateOauthUrlWithParamsSpy).toHaveBeenLastCalledWith(
+      'Google',
+      'test-client-id',
+      'test-redirect-uri',
+      undefined,
+    )
+  })
+
+  it('should update the global this location href correctly', async () => {
+    await sdk.performLogin(SocialLoginProvider.GOOGLE)
+
+    expect(window.location.href).toContain('prompt=none')
+  })
+})
