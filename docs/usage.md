@@ -51,18 +51,19 @@ Enumerates the types of challenges supported.
 
 ```typescript
 enum ChallengeType {
-  INITIALIZE,
-  SET_PIN,
-  RESTORE_PIN,
-  SET_SECURITY_QUESTIONS,
-  CREATE_WALLET,
-  CREATE_TRANSACTION,
-  ACCELERATE_TRANSACTION,
-  CANCEL_TRANSACTION,
-  CONTRACT_EXECUTION,
-  SIGN_MESSAGE,
-  SIGN_TYPEDDATA,
-  UNKNOWN,
+  INITIALIZE = 'INITIALIZE',
+  SET_PIN = 'SET_PIN',
+  CHANGE_PIN = 'CHANGE_PIN',
+  RESTORE_PIN = 'RESTORE_PIN',
+  SET_SECURITY_QUESTIONS = 'SET_SECURITY_QUESTIONS',
+  CREATE_WALLET = 'CREATE_WALLET',
+  CREATE_TRANSACTION = 'CREATE_TRANSACTION',
+  ACCELERATE_TRANSACTION = 'ACCELERATE_TRANSACTION',
+  CANCEL_TRANSACTION = 'CANCEL_TRANSACTION',
+  SIGN_MESSAGE = 'SIGN_MESSAGE',
+  SIGN_TYPEDDATA = 'SIGN_TYPEDDATA',
+  SIGN_TRANSACTION = 'SIGN_TRANSACTION',
+  UNKNOWN = 'UNKNOWN',
 }
 ```
 
@@ -72,11 +73,11 @@ Enumerates the possible statuses for a challenge.
 
 ```typescript
 enum ChallengeStatus {
-  COMPLETE,
-  EXPIRED,
-  FAILED,
-  IN_PROGRESS,
-  PENDING,
+  COMPLETE = 'COMPLETE',
+  EXPIRED = 'EXPIRED',
+  FAILED = 'FAILED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  PENDING = 'PENDING',
 }
 ```
 
@@ -85,7 +86,7 @@ enum ChallengeStatus {
 Enumerates the types of error code.
 
 ```typescript
-enum enum ErrorCode {
+enum ErrorCode {
   unknown = -1,
   success = 0,
   apiParameterMissing = 1,
@@ -99,6 +100,7 @@ enum enum ErrorCode {
   invalidPartnerId = 13,
   invalidMessage = 14,
   invalidPhone = 15,
+
   userAlreadyExisted = 155101,
   userNotFound = 155102,
   userTokenNotFound = 155103,
@@ -119,6 +121,24 @@ enum enum ErrorCode {
   invalidEncryptionKey = 155118,
   userPinLocked = 155119,
   securityAnswersLocked = 155120,
+
+  userOTPTokenExpiredError = 155130,
+  userOTPTokenInvalidError = 155131,
+  userOTPNotFoundError = 155132,
+  userOTPInvalidError = 155133,
+  userOTPNotMatchError = 155134,
+  userEmailInvalidError = 155135,
+  userEmailMismatchError = 155136,
+  deviceIDInvalidError = 155137,
+  emailSendingFailedError = 155138,
+  socialLoginTokenExpiredError = 155139,
+  socialLoginProviderAppIDNotMatchError = 155140,
+  userOTPIsLockedError = 155141,
+  userOTPSendCountsOverLimitError = 155142,
+  deviceTokenExpiredError = 155143,
+  deviceTokenInvalidError = 155144,
+  deviceTokenNotFoundError = 155145,
+
   notEnoughFunds = 155201,
   notEnoughBalance = 155202,
   exceedWithdrawLimit = 155203,
@@ -143,15 +163,18 @@ enum enum ErrorCode {
   maxWalletLimitReached = 155502,
   walletSetIdMutuallyExclusive = 155503,
   metadataUnmatched = 155504,
+
   userCanceled = 155701,
   launchUiFailed = 155702,
   pinCodeNotMatched = 155703,
   insecurePinCode = 155704,
   hintsMatchAnswers = 155705,
   networkError = 155706,
+
   userSecretMissing = 155717,
-  invalidUserTokenFormat= 155718,
+  invalidUserTokenFormat = 155718,
   userTokenMismatch = 155719,
+
   walletIdNotFound = 156001,
   tokenIdNotFound = 156002,
   transactionIdNotFound = 156003,
