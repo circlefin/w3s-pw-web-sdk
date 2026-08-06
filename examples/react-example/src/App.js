@@ -93,11 +93,15 @@ function App() {
         return
       }
 
+      if (!result) {
+        return
+      }
+
       console.log(`Challenge: ${result.type}`)
       console.log(`status: ${result.status}`)
 
-      if (result.data) {
-        console.log(`signature: ${result.data?.signature}`)
+      if ('data' in result && result.data) {
+        console.log(`signature: ${result.data.signature}`)
       }
     })
   }, [appId, challengeId, encryptionKey, userToken])
