@@ -28,7 +28,7 @@ $ npm install @circle-fin/w3s-pw-web-sdk
 
 ### Prerequisites
 
-Sign up for [Circle's Dev Console](https://developers.circle.com/w3s/docs/circle-developer-account) to obtain an APP ID.
+Sign up for [Circle's Dev Console](https://console.circle.com/) to obtain an APP ID.
 
 ### Initiating the SDK
 
@@ -72,8 +72,8 @@ sdk.execute(challengeId, (error, result) => {
 
 Check out the developer documentations below for an easy-breezy setup and smoother usage experience.
 
-- [Web SDK doc](https://developers.circle.com/w3s/docs/web)
-- [Web SDK UI Customization API doc](https://developers.circle.com/w3s/docs/web-sdk-ui-customizations)
+- [Web SDK doc](https://developers.circle.com/sdks/user-controlled/web-sdk)
+- [Web SDK UI Customization API doc](https://developers.circle.com/sdks/user-controlled/web-sdk-ui-customizations)
 
 ## Examples
 
