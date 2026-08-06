@@ -41,7 +41,7 @@
 
 ## Overview
 
-Programmable Wallets Web SDK secures the process when users input their secret data, for example, PIN code and recovery questions. It also has various interfaces to interact with the [W3S APIs](https://developers.circle.com/w3s/reference/createuserwithpinchallenge) as in wallet creation, transaction initiation, also sign message (EIP-191) and sign typed-data (EIP-712) via the `challengeId`.
+Programmable Wallets Web SDK secures the process when users input their secret data, for example, PIN code and recovery questions. It also has various interfaces to interact with the [W3S APIs](https://developers.circle.com/api-reference/wallets/user-controlled-wallets/create-user-with-pin-challenge) as in wallet creation, transaction initiation, also sign message (EIP-191) and sign typed-data (EIP-712) via the `challengeId`.
 
 ## Enums
 
