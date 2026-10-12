@@ -9,6 +9,7 @@
   - [Usage](#usage)
     - [Prerequisites](#prerequisites)
     - [Initiating the SDK](#initiating-the-sdk)
+    - [Using the SDK without a bundler](#using-the-sdk-without-a-bundler)
   - [Documentation](#documentation)
   - [Examples](#examples)
 
@@ -67,6 +68,28 @@ sdk.execute(challengeId, (error, result) => {
   }
 })
 ```
+
+### Using the SDK without a bundler
+
+For a static HTML page that does not use a build step, import the SDK from
+jsDelivr's browser-compatible ESM endpoint. Pin the URL to the SDK version your
+application has tested:
+
+```html
+<script type="module">
+  import { W3SSdk } from 'https://cdn.jsdelivr.net/npm/@circle-fin/w3s-pw-web-sdk@1.1.11/+esm'
+
+  const sdk = new W3SSdk({
+    appSettings: {
+      appId: '<Your App Id>'
+    }
+  })
+</script>
+```
+
+Loading the package from `esm.sh` is not supported. Its browser conversion can
+fail while loading the SDK's Node-oriented transitive dependencies with
+`TypeError: Object prototype may only be an Object or null: undefined`.
 
 ## Documentation
 
